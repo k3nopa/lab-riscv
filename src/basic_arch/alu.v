@@ -5,18 +5,30 @@ module alu(a, b, alu_op, result, branch);
   output reg [31:0] result;
   output reg branch; // 0: !branch, 1: branch
 
+  // define constants
+  parameter [3:0] ADD = 4'b0000;
+  parameter [3:0] SUB = 4'b0001;
+  parameter [3:0] MUL = 4'b1000;
+  parameter [3:0] AND = 4'b0011;
+  parameter [3:0] OR = 4'b0110;
+  parameter [3:0] SL = 4'b0010;
+  parameter [3:0] SR = 4'b0100;
+  parameter [3:0] BEQ = 4'b1100;
+  parameter [3:0] BGT = 4'b1001;
+  parameter [3:0] BLT = 4'b0101;
+
   always @(*) begin
     case (alu_op)
-      4'b0000: result = a + b;  // ADD
-      4'b0001: result = a - b;  // SUB
-      4'b0010: result = a << b; // SHIFT LEFT 
-      4'b0100: result = a >> b; // SHIFT RIGHT
-      4'b1000: result = a * b;  // MUL
-      4'b0011: result = a & b;  // AND
-      4'b0110: result = a | b;  // OR
-      4'b1100: branch = (a == b) ? 1'b1 : 1'b0;  // EQ 
-      4'b1001: branch = (a > b) ? 1'b1 : 1'b0;  // GT
-      4'b0101: branch = (a < b) ? 1'b1 : 1'b0;  // LT
+      ADD: result = a + b;
+      SUB: result = a - b;
+      MUL: result = a * b;
+      AND: result = a & b;
+      OR: result = a | b;
+      SL: result = a << b;
+      SR: result = a >> b;
+      BEQ: branch = (a == b) ? 1'b1 : 1'b0;
+      BGT: branch = (a > b) ? 1'b1 : 1'b0;
+      BLT: branch = (a < b) ? 1'b1 : 1'b0;
       default: begin 
         result = a + b;
         branch = 1'b0;
