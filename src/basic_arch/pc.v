@@ -1,19 +1,20 @@
-module pc(clock,reset,pcin,pcwrite,pcout);
+module pc(clk,reset,pc_in,pc_out);
 
-  input clock,reset;
-  input [31:0] pcin;
-  input 	pcwrite;
-  output[31:0] pcout;
-  reg[31:0] 	pcout;
+  input clk,reset;
+  input [31:0] pc_in;
 
+  reg [31:0] pc_current;
+  wire [31:0] new_pc;
 
-  always@(posedge clock or negedge reset)
-    begin
+  output[31:0] pc_out;
 
-    if(reset==1'b0)
-    begin
-      pcout<=32'h00010000;
-    end
+  always @ (posedge clk or posedge reset) begin
+    if(reset)
+      pc_current <= 32'd0;
+    else
+      pc_current <= pc_in + 32'd4;
   end
+
+  assign pc_out = pc_current;
 
 endmodule // pc
