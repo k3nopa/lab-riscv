@@ -9,14 +9,15 @@ module test_adder();
       
       assign data1=32'd4;
       assign data2=32'd6;
-      #10
+      #10 // sleep
       assign data1=32'd2;
       assign data2=32'd5;
-      #10
+      #10 // sleep
       assign data1=32'd5;
       assign data2=32'd8;
-      #10
+      #10 // sleep
 	$finish;
+
    end
 endmodule // test_adder
 
