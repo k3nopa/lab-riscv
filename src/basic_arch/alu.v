@@ -6,16 +6,16 @@ module alu(a, b, alu_op, result, branch);
   output reg branch; // 0: !branch, 1: branch
 
   // define constants
-  parameter [3:0] ADD = 4'b0000;
-  parameter [3:0] SUB = 4'b0001;
-  parameter [3:0] MUL = 4'b1000;
-  parameter [3:0] AND = 4'b0011;
-  parameter [3:0] OR = 4'b0110;
-  parameter [3:0] SL = 4'b0010;
-  parameter [3:0] SR = 4'b0100;
-  parameter [3:0] BEQ = 4'b1100;
-  parameter [3:0] BGT = 4'b1001;
-  parameter [3:0] BLT = 4'b0101;
+  localparam [3:0] ADD = 4'd0;
+  localparam [3:0] SUB = 4'd1;
+  localparam [3:0] MUL = 4'd2;
+  localparam [3:0] AND = 4'd3;
+  localparam [3:0] OR = 4'd4;
+  localparam [3:0] SL = 4'd5;
+  localparam [3:0] SR = 4'd6;
+  localparam [3:0] BEQ = 4'd7;
+  localparam [3:0] BGT = 4'd8;
+  localparam [3:0] BLT = 4'd9;
 
   always @(*) begin
     case (alu_op)
