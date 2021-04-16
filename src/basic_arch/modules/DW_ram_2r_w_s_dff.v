@@ -36,15 +36,15 @@
 //
 //	MODIFIED:
 //		092299	Jay Zhu		Rewrote for STAR91151
-//              10/18/00  RPH       Rewrote accoding to new guidelines 
-//                                  STAR 111067   
+//              10/18/00  RPH       Rewrote accoding to new guidelines
+//                                  STAR 111067
 //              05/25/01  RJK       Rewritten again
 //              2/18/09   RJK       Corrected default value for rst_mode
 //				    STAR 9000294457
 //----------------------------------------------------------------------
 
 
-module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr, 
+module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
 			  wr_addr, data_in, data_rd1_out, data_rd2_out);
 
    parameter data_width = 4;
@@ -71,33 +71,33 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
    reg [depth*data_width-1:0]    mem;
    wire [depth*data_width-1:0]   mem_mux1;
    wire [depth*data_width-1:0]   mem_mux2;
-   
-   wire 		   a_rst_n;
-   
 
-   
-  
+   wire 		   a_rst_n;
+
+
+
+
   initial begin : parameter_check
     integer param_err_flg;
 
     param_err_flg = 0;
-    
-	    
-  
+
+
+
     if ( (data_width < 1) || (data_width > 2048) ) begin
       param_err_flg = 1;
       $display(
 	"ERROR: %m :\n  Invalid value (%d) for parameter data_width (legal range: 1 to 2048)",
 	data_width );
     end
-  
+
     if ( (depth < 2) || (depth > 1024 ) ) begin
       param_err_flg = 1;
       $display(
 	"ERROR: %m :\n  Invalid value (%d) for parameter depth (legal range: 2 to 1024 )",
 	depth );
     end
-  
+
     if ( (rst_mode < 0) || (rst_mode > 1 ) ) begin
       param_err_flg = 1;
       $display(
@@ -105,7 +105,7 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
 	rst_mode );
     end
 
-  
+
     if ( param_err_flg == 1) begin
       $display(
         "%m :\n  Simulation aborted due to invalid parameter value(s)");
@@ -113,36 +113,36 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
     end
 
   end // parameter_check
-   
+
    assign mem_mux1 = mem >> (rd1_addr * data_width);
 
    assign data_rd1_out = ((rd1_addr ^ rd1_addr) !== {`DW_addr_width{1'b0}})? {data_width{1'bx}} : (
 				(rd1_addr >= depth)? {data_width{1'b0}} :
 				   mem_mux1[data_width-1 : 0] );
-   
+
    assign mem_mux2 = mem >> (rd2_addr * data_width);
 
    assign data_rd2_out = ((rd2_addr ^ rd2_addr) !== {`DW_addr_width{1'b0}})? {data_width{1'bx}} : (
 				(rd2_addr >= depth)? {data_width{1'b0}} :
 				   mem_mux2[data_width-1 : 0] );
-   
+
    assign a_rst_n = (rst_mode == 0)? rst_n : 1'b1;
 
 
-  
+
    always @ (posedge clk or negedge a_rst_n) begin : registers
       integer i, j;
-      
-   
+
+
       next_mem = mem;
 
       if ((cs_n | wr_n) !== 1'b1) begin
-      
+
 	 if ((wr_addr ^ wr_addr) !== {`DW_addr_width{1'b0}}) begin
-	    next_mem = {depth*data_width{1'bx}};	
+	    next_mem = {depth*data_width{1'bx}};
 
 	 end else begin
-         
+
 	    if ((wr_addr < depth) && ((wr_n | cs_n) !== 1'b1)) begin
 	       for (i=0 ; i < data_width ; i=i+1) begin
 		  j = wr_addr*data_width + i;
@@ -151,9 +151,9 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
 	       end // for
 	    end // if
 	 end // if-else
-      end // if   
-   
-   
+      end // if
+
+
       if (rst_n === 1'b0) begin
          mem <= {depth*data_width{1'b0}};
       end else begin
@@ -164,13 +164,13 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
 	 end
       end
    end // registers
-   
-    
-  always @ (clk) begin : clk_monitor 
+
+
+  always @ (clk) begin : clk_monitor
     if ( (clk !== 1'b0) && (clk !== 1'b1) && ($time > 0) )
       $display( "WARNING: %m :\n  at time = %t, detected unknown value, %b, on clk input.",
                 $time, clk );
-    end // clk_monitor 
+    end // clk_monitor
 
 // synopsys translate_on
 

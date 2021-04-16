@@ -1,8 +1,9 @@
 `timescale 1ns/1ps
-`define IN_TOTAL 2000000000
+`define IN_TOTAL 10000000
+`include "top.v"
 
 module top_test;
-   
+
    //*** parameter declarations ***//
    parameter CYCLE       = 10;
    parameter HALF_CYCLE  =  5;
@@ -12,6 +13,8 @@ module top_test;
    parameter BYTE_SIZE    =  8;
    parameter IMEM_LATENCY = 1;  // instruction memory latency
    parameter DMEM_LATENCY = 1;  // data memory latency
+   parameter IMEM_START = 32'h0000_0000;
+   parameter DMEM_START = 32'h8000_0000;
    parameter IMEM_SIZE = 8000000;  // instruction memory size
    parameter DMEM_SIZE = 8000000;  // data memory size
    parameter STDOUT_ADDR = 32'hf0000000;
@@ -35,28 +38,28 @@ module top_test;
 
    integer              i;
    integer              CIL, CDLL, CDSL;  // counter for emulate memory access latency
-   integer              Reg_data, Dmem_data;   // file pointer for "Reg_out.dat", "Dmem.out"
+   integer              Reg_data, Dmem_data, Imem_data;   // file pointer for "Reg_out.dat", "Dmem.out"
    integer              Max_Daddr;  // integer for remenbering maximum accessed addr of data memory
    reg [BIT_WIDTH-1:0]  Daddr, Iaddr;
 
-   reg [BYTE_SIZE-1:0]   DATA_Imem[0:IMEM_SIZE];   // use in readmemh  (Instruction mem)       
-   reg [BYTE_SIZE-1:0]   DATA_Dmem[0:DMEM_SIZE];   // use in readmemh (Data mem)
+   reg [BYTE_SIZE-1:0]   DATA_Imem[IMEM_START:IMEM_START + IMEM_SIZE];   // use in readmemh  (Instruction mem)
+   reg [BYTE_SIZE-1:0]   DATA_Dmem[DMEM_START:DMEM_START + DMEM_SIZE];   // use in readmemh (Data mem)
 
    //*** module instantations ***//
    top u_top_1(//Inputs
                .clk(clk), .rst(rst),
-               .ACKD_n(ACKD_n), .ACKI_n(ACKI_n), 
+               .ACKD_n(ACKD_n), .ACKI_n(ACKI_n),
                .IDT(IDT), .OINT_n(OINT_n),
-      
+
                //Outputs
-               .IAD(IAD), .DAD(DAD), 
-               .MREQ(MREQ), .WRITE(WRITE), 
-               .SIZE(SIZE), .IACK_n(IACK_n), 
-      
+               .IAD(IAD), .DAD(DAD),
+               .MREQ(MREQ), .WRITE(WRITE),
+               .SIZE(SIZE), .IACK_n(IACK_n),
+
                //Inout
                .DDT(DDT)
                );
-   
+
      //*** clock generation ***//
      always begin
         clk = 1'b1;
@@ -88,23 +91,22 @@ module top_test;
 
      initial begin
         #HALF_CYCLE;
-
         //*** data input loop ***//
         for (i = 0; i < `IN_TOTAL; i =i +1)
           begin
 
-             Iaddr = u_top_1.IAD;            
+             Iaddr = u_top_1.IAD;
              fetch_task1;
 
              Daddr = u_top_1.DAD;
              load_task1;
              store_task1;
-             
+
              // #(STB);
              #CYCLE;
              release DDT;
           end // for (i = 0; i < `IN_TOTAL; i =i +1)
-	
+
         $display("\nReach IN_TOTAL.");
 
         dump_task1;
@@ -114,11 +116,13 @@ module top_test;
      end // initial begin
 
    //*** description for wave form ***//
-//   initial begin
-//      $monitor($stime," PC=%h", IAD);
-//      $shm_open("waves.shm");
-//      $shm_probe("AS");
-//   end
+   initial begin
+      //$monitor($stime," PC=%h INST=%h", IAD, IDT);
+      $dumpfile("top_test.vcd");
+      $dumpvars(0, u_top_1);
+      //$shm_open("waves.shm");
+      //$shm_probe("AS");
+   end
 
 
    //*** tasks ***//
@@ -139,7 +143,7 @@ module top_test;
            end // else: !if(CIL == IMEM_LATENCY)
       end
    endtask // fetch_task1
-   
+
    task load_task1;
       begin
          if(u_top_1.MREQ && !u_top_1.WRITE)
@@ -156,16 +160,17 @@ module top_test;
                 begin
                    if(SIZE == 2'b00)
                      begin
-                        force DDT[BIT_WIDTH-1:0] = {DATA_Dmem[Daddr], DATA_Dmem[Daddr+1],
-                                                    DATA_Dmem[Daddr+2], DATA_Dmem[Daddr+3]};
-                     end              
+                        force DDT[BIT_WIDTH-1:0] = {DATA_Dmem[Daddr], DATA_Dmem[Daddr + 1],
+                                                    DATA_Dmem[Daddr + 2], DATA_Dmem[Daddr + 3]};
+                     end
                    else if(SIZE == 2'b01)
                      begin
-                        force DDT[BIT_WIDTH-1:0] = {{16{1'b0}}, DATA_Dmem[Daddr], DATA_Dmem[Daddr+1]};
+                        force DDT[BIT_WIDTH-1:0] = {{16{1'b0}}, DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0]],
+													DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0] + 1]};
                      end
                    else
                      begin
-                        force DDT[BIT_WIDTH-1:0] = {{24{1'b0}}, DATA_Dmem[Daddr]};
+                        force DDT[BIT_WIDTH-1:0] = {{24{1'b0}}, DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0]]};
                      end // else: !if(SIZE == 2'b01)
 
                    ACKD_n = 1'b0;
@@ -179,7 +184,7 @@ module top_test;
            end // if (u_top_1.MREQ && !u_top_1.WRITE)
       end
    endtask // load_task1
-   
+
    task store_task1;
       begin
          if(u_top_1.MREQ && u_top_1.WRITE)
@@ -213,8 +218,8 @@ module top_test;
                      end
                    else if(SIZE == 2'b01)
                      begin
-                        DATA_Dmem[Daddr] = DDT[BIT_WIDTH-17:BIT_WIDTH-24];
-                        DATA_Dmem[Daddr+1] = DDT[BIT_WIDTH-25:BIT_WIDTH-32];
+                        DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0]] = DDT[BIT_WIDTH-25:BIT_WIDTH-32];
+                        DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0] + 1] = DDT[BIT_WIDTH-17:BIT_WIDTH-24];
                      end
                    else
                      begin
@@ -224,10 +229,10 @@ module top_test;
                           end
                         else
                           begin
-                             DATA_Dmem[Daddr] = DDT[BIT_WIDTH-25:BIT_WIDTH-32];
+                             DATA_Dmem[{Daddr[BIT_WIDTH-1:2],2'b00} + 3 - Daddr[1:0]] = DDT[BIT_WIDTH-25:BIT_WIDTH-32];
                           end
                      end // else: !if(SIZE == 2'b01)
-                   
+
                    ACKD_n = 1'b0;
                    CDSL = 0;
 
@@ -236,15 +241,20 @@ module top_test;
                 begin
                    ACKD_n = 1'b1;
                 end // else: !if(CDSL == DMEM_LATENCY)
-           end // if (u_top_1.MREQ && u_top_1.WRITE)             
+           end // if (u_top_1.MREQ && u_top_1.WRITE)
       end
    endtask // store_task1
 
    task dump_task1;
       begin
-
+        Imem_data = $fopen("./Imem_out.dat");
+        for (i = IMEM_START; i < IMEM_START + IMEM_SIZE; i = i+4)  // output data memory to Dmem_data (Dmem_out.dat)
+          begin
+             $fwrite(Imem_data, "%h :%h %h %h %h\n", i, DATA_Imem[i], DATA_Imem[i+1], DATA_Imem[i+2], DATA_Imem[i+3]);
+          end
+        $fclose(Imem_data);
         Dmem_data = $fopen("./Dmem_out.dat");
-        for (i = 0; i <= Max_Daddr && i < DMEM_SIZE; i = i+4)  // output data memory to Dmem_data (Dmem_out.dat)
+        for (i = DMEM_START; i < DMEM_START + DMEM_SIZE; i = i+4)  // output data memory to Dmem_data (Dmem_out.dat)
           begin
              $fwrite(Dmem_data, "%h :%h %h %h %h\n", i, DATA_Dmem[i], DATA_Dmem[i+1], DATA_Dmem[i+2], DATA_Dmem[i+3]);
           end
@@ -253,7 +263,8 @@ module top_test;
         Reg_data = $fopen("./Reg_out.dat");
         for (i =0; i < 32; i = i+1)  // output register to Reg_data (Reg_out.dat)
           begin
-             Reg_temp = u_top_1.i_IDstage.i_rf32x32.u_DW_ram_2r_w_s_dff.mem >> (BIT_WIDTH * i);
+            // change id_stage -> instantiated id stage's name
+             Reg_temp = u_top_1.id_stage.regfile.u_DW_ram_2r_w_s_dff.mem >> (BIT_WIDTH * i);
              $fwrite(Reg_data, "%d:%h\n", i, Reg_temp);
           end
         $fclose(Reg_data);

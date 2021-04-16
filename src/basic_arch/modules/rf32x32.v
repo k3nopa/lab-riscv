@@ -1,4 +1,3 @@
-
 `define  ZERO           1'b0           // Rename to Zero
 `define  LOW            1'b0           // Rename to Zero
 `define  HIGH           1'b1           // Rename to High
@@ -14,7 +13,7 @@ module rf32x32(
 		// Outputs
 		data1_out, data2_out
 		);
-   
+
    parameter data_width      = 32;
    parameter depth           = 32;
    parameter bit_width_depth = 5;  // ceil(log2(depth))
@@ -25,11 +24,11 @@ module rf32x32(
    input                          clk;       // clock
    input 			  reset;
    input                          wr_n;      // Write enable, active low
-   input  [bit_width_depth-1 : 0] rd1_addr;  // Read0 address bus  
+   input  [bit_width_depth-1 : 0] rd1_addr;  // Read0 address bus
    input  [bit_width_depth-1 : 0] rd2_addr;  // Read1 address bus
    input  [bit_width_depth-1 : 0] wr_addr;   // Write address bus
    input       [data_width-1 : 0] data_in;   // Input data bus
-   
+
    output      [data_width-1 : 0] data1_out; // Output data bus for read0
    output      [data_width-1 : 0] data2_out; // Output data bus for read1
 
@@ -38,7 +37,7 @@ module rf32x32(
    wire 			  clk_inv;
    wire        [data_width-1 : 0] ram_data1_out;
    wire        [data_width-1 : 0] ram_data2_out;
-   
+
 
    assign    clk_inv = ~clk;
    assign  data1_out = (|rd1_addr) ? ram_data1_out : {data_width{`ZERO}};
@@ -57,5 +56,3 @@ module rf32x32(
       );
 
 endmodule // rf32x32
-
-
