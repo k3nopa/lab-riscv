@@ -22,7 +22,7 @@ module rf32x32(
 
    //*** I/O declarations ***//
    input                          clk;       // clock
-   input 			  reset;
+   input 			      reset;     // reset
    input                          wr_n;      // Write enable, active low
    input  [bit_width_depth-1 : 0] rd1_addr;  // Read0 address bus
    input  [bit_width_depth-1 : 0] rd2_addr;  // Read1 address bus
@@ -44,8 +44,8 @@ module rf32x32(
    assign  data2_out = (|rd2_addr) ? ram_data2_out : {data_width{`ZERO}};
 
    // Instance of DW_ram_2r_w_s_lat
-   DW_ram_2r_w_s_dff #(data_width, depth, rst_mode)
-      u_DW_ram_2r_w_s_dff(
+   // Module Parameter Instantiate
+   DW_ram_2r_w_s_dff #(data_width, depth, rst_mode) u_DW_ram_2r_w_s_dff(
              .clk(clk_inv), .rst_n(reset),
              .cs_n(`LOW), .wr_n(wr_n),
              .rd1_addr(rd1_addr), .rd2_addr(rd2_addr),

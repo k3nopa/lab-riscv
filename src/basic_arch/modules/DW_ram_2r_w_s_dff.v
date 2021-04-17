@@ -75,44 +75,32 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
    wire 		   a_rst_n;
 
 
+   initial begin : parameter_check
+      integer param_err_flg;
 
+      param_err_flg = 0;
 
-  initial begin : parameter_check
-    integer param_err_flg;
+      if ( (data_width < 1) || (data_width > 2048) ) begin
+         param_err_flg = 1;
+         $display("ERROR: %m :\n  Invalid value (%d) for parameter data_width (legal range: 1 to 2048)", data_width );
+      end
 
-    param_err_flg = 0;
+      if ( (depth < 2) || (depth > 1024 ) ) begin
+         param_err_flg = 1;
+         $display("ERROR: %m :\n  Invalid value (%d) for parameter depth (legal range: 2 to 1024 )", depth );
+      end
 
+      if ( (rst_mode < 0) || (rst_mode > 1 ) ) begin
+         param_err_flg = 1;
+         $display("ERROR: %m :\n  Invalid value (%d) for parameter rst_mode (legal range: 0 to 1 )", rst_mode );
+      end
 
+      if ( param_err_flg == 1) begin
+         $display("%m :\n  Simulation aborted due to invalid parameter value(s)");
+         $finish;
+      end
 
-    if ( (data_width < 1) || (data_width > 2048) ) begin
-      param_err_flg = 1;
-      $display(
-	"ERROR: %m :\n  Invalid value (%d) for parameter data_width (legal range: 1 to 2048)",
-	data_width );
-    end
-
-    if ( (depth < 2) || (depth > 1024 ) ) begin
-      param_err_flg = 1;
-      $display(
-	"ERROR: %m :\n  Invalid value (%d) for parameter depth (legal range: 2 to 1024 )",
-	depth );
-    end
-
-    if ( (rst_mode < 0) || (rst_mode > 1 ) ) begin
-      param_err_flg = 1;
-      $display(
-	"ERROR: %m :\n  Invalid value (%d) for parameter rst_mode (legal range: 0 to 1 )",
-	rst_mode );
-    end
-
-
-    if ( param_err_flg == 1) begin
-      $display(
-        "%m :\n  Simulation aborted due to invalid parameter value(s)");
-      $finish;
-    end
-
-  end // parameter_check
+   end // parameter_check
 
    assign mem_mux1 = mem >> (rd1_addr * data_width);
 
@@ -133,35 +121,36 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
    always @ (posedge clk or negedge a_rst_n) begin : registers
       integer i, j;
 
-
       next_mem = mem;
 
       if ((cs_n | wr_n) !== 1'b1) begin
 
-	 if ((wr_addr ^ wr_addr) !== {`DW_addr_width{1'b0}}) begin
-	    next_mem = {depth*data_width{1'bx}};
+         if ((wr_addr ^ wr_addr) !== {`DW_addr_width{1'b0}}) begin
+            next_mem = {depth*data_width{1'bx}};
 
-	 end else begin
+         end 
+         else begin
 
-	    if ((wr_addr < depth) && ((wr_n | cs_n) !== 1'b1)) begin
-	       for (i=0 ; i < data_width ; i=i+1) begin
-		  j = wr_addr*data_width + i;
-		  next_mem[j] = ((wr_n | cs_n) == 1'b0)? data_in[i] | 1'b0
-					: mem[j];
-	       end // for
-	    end // if
-	 end // if-else
+            if ((wr_addr < depth) && ((wr_n | cs_n) !== 1'b1)) begin
+               for (i=0 ; i < data_width ; i=i+1) begin
+                  j = wr_addr*data_width + i;
+                  next_mem[j] = ((wr_n | cs_n) == 1'b0)? data_in[i] | 1'b0 : mem[j];
+               end // for
+            end // if
+         end // if-else
       end // if
 
 
       if (rst_n === 1'b0) begin
          mem <= {depth*data_width{1'b0}};
-      end else begin
+      end 
+      else begin
          if ( rst_n === 1'b1) begin
-	    mem <= next_mem;
-	 end else begin
-	    mem <= {depth*data_width{1'bX}};
-	 end
+            mem <= next_mem;
+         end 
+         else begin
+            mem <= {depth*data_width{1'bX}};
+         end
       end
    end // registers
 
