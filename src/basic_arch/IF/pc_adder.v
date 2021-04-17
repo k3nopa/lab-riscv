@@ -1,12 +1,13 @@
-module pc(clk,reset,pc_in,pc_out);
-
-  input clk,reset;
-  input [31:0] pc_in;
+module pc_adder(
+  input clk, 
+  input reset, 
+  input [31:0] pc_in, 
+  
+  output [31:0] pc_out
+);
 
   reg [31:0] pc_current;
   wire [31:0] new_pc;
-
-  output[31:0] pc_out;
 
   always @ (posedge clk or posedge reset) begin
     if(reset)
