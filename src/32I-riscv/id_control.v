@@ -7,7 +7,7 @@ module Control(
 
   output reg mem_read, mem_write, reg_write, alu_src, 
   output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
-  output reg [3:0] alu_op
+  output [3:0] alu_op
 );
   // Instructions' Type
   localparam 
@@ -25,55 +25,58 @@ module Control(
     ALU_MUL = 4'd2,
     ALU_AND = 4'd3,
     ALU_OR = 4'd4,
-    ALU_SL = 4'd5,
-    ALU_SR = 4'd6,
-    ALU_SLT = 4'd7,
-    ALU_SLTU = 4'd8,
-    ALU_AUIPC = 4'd9;
+    ALU_XOR = 4'd5,
+    ALU_SHL = 4'd6,
+    ALU_SHR = 4'd7,
+    ALU_SLT = 4'd8,
+    ALU_SLTU = 4'd9,
+    ALU_AUIPC = 4'd10;
 
   // Instructions' Format in Parts
   wire [6:0] op_part = inst[6:0];
   wire [2:0] f3_part = inst[14:12];
-  wire [6:0] f7_part = inst[31:25]
+  wire [6:0] f7_part = inst[31:25];
 
   // Instructions
   wire lui   = (7'b0110111 == op_part);
   wire auipc = (7'b0010111 == op_part);
 
   wire load_op = 7'b0000011;
-  wire lb      = load_op && (3'b000 == f3_part);
-  wire lh      = load_op && (3'b001 == f3_part);
-  wire lw      = load_op && (3'b010 == f3_part);
-  wire lbu     = load_op && (3'b100 == f3_part);
-  wire lhu     = load_op && (3'b101 == f3_part);
+  wire lb      = (load_op == op_part) && (3'b000 == f3_part);
+  wire lh      = (load_op == op_part) && (3'b001 == f3_part);
+  wire lw      = (load_op == op_part) && (3'b010 == f3_part);
+  wire lbu     = (load_op == op_part) && (3'b100 == f3_part);
+  wire lhu     = (load_op == op_part) && (3'b101 == f3_part);
+  wire load    = (lb || lh || lw || lbu || lhu);
 
   wire store_op = 7'b0100011;
-  wire sb       = store_op && (3'b000 == f3_part);
-  wire sh       = store_op && (3'b001 == f3_part);
-  wire sw       = store_op && (3'b010 == f3_part);
+  wire sb       = (store_op == op_part) && (3'b000 == f3_part);
+  wire sh       = (store_op == op_part) && (3'b001 == f3_part);
+  wire sw       = (store_op == op_part) && (3'b010 == f3_part);
+  wire store    = (sb || sh || sw);
 
   wire imm_op = 7'b0010011;
-  wire addi   = imm_op && (3'b000 == f3_part);
-  wire slti   = imm_op && (3'b010 == f3_part);
-  wire sltiu  = imm_op && (3'b011 == f3_part);
-  wire xori   = imm_op && (3'b100 == f3_part);
-  wire ori    = imm_op && (3'b110 == f3_part);
-  wire andi   = imm_op && (3'b111 == f3_part);
-  wire slli   = imm_op && (3'b001 == f3_part);
-  wire srli   = imm_op && (3'b101 == f3_part) && (7'b0000000 == f7_part);
-  wire srai   = imm_op && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+  wire addi   = (imm_op == op_part) && (3'b000 == f3_part);
+  wire slti   = (imm_op == op_part) && (3'b010 == f3_part);
+  wire sltiu  = (imm_op == op_part) && (3'b011 == f3_part);
+  wire xori   = (imm_op == op_part) && (3'b100 == f3_part);
+  wire ori    = (imm_op == op_part) && (3'b110 == f3_part);
+  wire andi   = (imm_op == op_part) && (3'b111 == f3_part);
+  wire slli   = (imm_op == op_part) && (3'b001 == f3_part);
+  wire srli   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
+  wire srai   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
   wire r_op   = 7'b0110011;
-  wire add    = r_op && (3'b000 == f3_part) && (7'b0000000 == f7_part);
-  wire sub    = r_op && (3'b000 == f3_part) && (7'b0100000 == f7_part);
-  wire slt    = r_op && (3'b010 == f3_part);
-  wire sltu   = r_op && (3'b011 == f3_part);
-  wire xor_i  = r_op && (3'b100 == f3_part);
-  wire or_i   = r_op && (3'b110 == f3_part);
-  wire and_i  = r_op && (3'b111 == f3_part);
-  wire sll    = r_op && (3'b001 == f3_part);
-  wire srl    = r_op && (3'b101 == f3_part) && (7'b0000000 == f7_part);
-  wire sra    = r_op && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+  wire add    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0000000 == f7_part);
+  wire sub    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0100000 == f7_part);
+  wire slt    = (r_op == op_part) && (3'b010 == f3_part);
+  wire sltu   = (r_op == op_part) && (3'b011 == f3_part);
+  wire xor_i  = (r_op == op_part) && (3'b100 == f3_part);
+  wire or_i   = (r_op == op_part) && (3'b110 == f3_part);
+  wire and_i  = (r_op == op_part) && (3'b111 == f3_part);
+  wire sll    = (r_op == op_part) && (3'b001 == f3_part);
+  wire srl    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
+  wire sra    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
   assign alu_op = 
     (add || addi || lui || load || store) ? ALU_ADD :
