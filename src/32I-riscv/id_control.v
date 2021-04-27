@@ -1,0 +1,133 @@
+// also handle write, size, mreq
+// 00 = word, 01 = half, 10 = byte 
+
+module Control(
+  input reset, 
+  input [31:0] inst, 
+
+  output reg mem_read, mem_write, reg_write, alu_src, 
+  output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
+  output reg [3:0] alu_op
+);
+  // Instructions' Type
+  localparam 
+    IMM = 7'b00110011,
+    JAL = 7'b1101111,
+    JALR = 7'b1100111,
+    BRANCH = 7'b1100011,
+    LOAD = 7'b0000011,
+    STORE = 7'b0100011,
+    R_TYPE = 7'b0110011;
+
+  localparam [3:0] 
+    ALU_ADD = 4'd0,
+    ALU_SUB = 4'd1,
+    ALU_MUL = 4'd2,
+    ALU_AND = 4'd3,
+    ALU_OR = 4'd4,
+    ALU_SL = 4'd5,
+    ALU_SR = 4'd6,
+    ALU_SLT = 4'd7,
+    ALU_SLTU = 4'd8,
+    ALU_AUIPC = 4'd9;
+
+  // Instructions' Format in Parts
+  wire [6:0] op_part = inst[6:0];
+  wire [2:0] f3_part = inst[14:12];
+  wire [6:0] f7_part = inst[31:25]
+
+  // Instructions
+  wire lui   = (7'b0110111 == op_part);
+  wire auipc = (7'b0010111 == op_part);
+
+  wire load_op = 7'b0000011;
+  wire lb      = load_op && (3'b000 == f3_part);
+  wire lh      = load_op && (3'b001 == f3_part);
+  wire lw      = load_op && (3'b010 == f3_part);
+  wire lbu     = load_op && (3'b100 == f3_part);
+  wire lhu     = load_op && (3'b101 == f3_part);
+
+  wire store_op = 7'b0100011;
+  wire sb       = store_op && (3'b000 == f3_part);
+  wire sh       = store_op && (3'b001 == f3_part);
+  wire sw       = store_op && (3'b010 == f3_part);
+
+  wire imm_op = 7'b0010011;
+  wire addi   = imm_op && (3'b000 == f3_part);
+  wire slti   = imm_op && (3'b010 == f3_part);
+  wire sltiu  = imm_op && (3'b011 == f3_part);
+  wire xori   = imm_op && (3'b100 == f3_part);
+  wire ori    = imm_op && (3'b110 == f3_part);
+  wire andi   = imm_op && (3'b111 == f3_part);
+  wire slli   = imm_op && (3'b001 == f3_part);
+  wire srli   = imm_op && (3'b101 == f3_part) && (7'b0000000 == f7_part);
+  wire srai   = imm_op && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+
+  wire r_op   = 7'b0110011;
+  wire add    = r_op && (3'b000 == f3_part) && (7'b0000000 == f7_part);
+  wire sub    = r_op && (3'b000 == f3_part) && (7'b0100000 == f7_part);
+  wire slt    = r_op && (3'b010 == f3_part);
+  wire sltu   = r_op && (3'b011 == f3_part);
+  wire xor_i  = r_op && (3'b100 == f3_part);
+  wire or_i   = r_op && (3'b110 == f3_part);
+  wire and_i  = r_op && (3'b111 == f3_part);
+  wire sll    = r_op && (3'b001 == f3_part);
+  wire srl    = r_op && (3'b101 == f3_part) && (7'b0000000 == f7_part);
+  wire sra    = r_op && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+
+  assign alu_op = 
+    (add || addi || lui || load || store) ? ALU_ADD :
+    (andi || and_i)                       ? ALU_AND :
+    (ori || or_i)                         ? ALU_OR :
+    (xori || xor_i)                       ? ALU_XOR :
+    (slti || slt)                         ? ALU_SLT :
+    (sltiu || sltu)                       ? ALU_SLTU :
+    (sll || slli)                         ? ALU_SHL :
+    (srl || srli || sra || srai)          ? ALU_SHR :
+    (auipc)                               ? ALU_AUIPC : ALU_SUB;
+
+  always @(*) begin
+    if (reset) begin
+      mem_read = 1'b0;  
+      mem_write = 1'b0;  
+      reg_write = 1'b0;  
+      alu_src = 1'b0;  
+      mem_to_reg = 2'b00;  
+      jump = 2'b00;  
+    end
+
+    else begin
+
+      case (inst[6:0])
+        IMM: begin
+        end
+        LOAD: begin
+          mem_read = 1'b1;  
+          mem_write = 1'b0;  
+          reg_write = 1'b1;  
+          alu_src = 1'b1;  
+          mem_to_reg = 2'b01;  
+          jump = 2'b00;
+        end
+        STORE: begin
+          mem_read = 1'b0;  
+          mem_write = 1'b1;  
+          reg_write = 1'b0;  
+          alu_src = 1'b1;  
+          mem_to_reg = 2'bxx;  
+          jump = 2'b00; 
+        end
+        R_TYPE: begin 
+          mem_read = 1'b0;  
+          mem_write = 1'b0;  
+          reg_write = 1'b1;  
+          alu_src = 1'b0;  
+          mem_to_reg = 2'b00;  
+          jump = 2'b00;  
+        end
+      endcase
+      
+    end
+  end
+
+endmodule
