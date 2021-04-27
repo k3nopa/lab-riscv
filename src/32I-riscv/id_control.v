@@ -7,6 +7,7 @@ module Control(
 
   output reg mem_read, mem_write, reg_write, alu_src, 
   output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
+  output [1:0] inst_size,
   output [3:0] alu_op
 );
   // Instructions' Type
@@ -31,6 +32,11 @@ module Control(
     ALU_SLT = 4'd8,
     ALU_SLTU = 4'd9,
     ALU_AUIPC = 4'd10;
+  
+  localparam [1:0]
+    BYTE = 2'b00,
+    HALF = 2'b01,
+    WORD = 2'b10;
 
   // Instructions' Format in Parts
   wire [6:0] op_part = inst[6:0];
@@ -88,6 +94,12 @@ module Control(
     (sll || slli)                         ? ALU_SHL :
     (srl || srli || sra || srai)          ? ALU_SHR :
     (auipc)                               ? ALU_AUIPC : ALU_SUB;
+
+  assign inst_size = 
+    (lb || lbu || sb) ? BYTE :
+    (lh || lhu || sh) ? HALF :
+    (lw || sw)        ? WORD ;
+
 
   always @(*) begin
     if (reset) begin

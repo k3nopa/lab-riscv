@@ -29,7 +29,7 @@ module top (
   wire [31:0] write_data;
 
   wire mem_read, mem_write, reg_write, alu_src;
-  wire [1:0] mem_to_reg, jump;
+  wire [1:0] mem_to_reg, jump, inst_size;
   wire [3:0] alu_op
   wire branch_result;
   wire [31:0] alu_result; // alu result
@@ -66,13 +66,13 @@ module top (
   // id pipeline register
 
   EX ex_phase(
-    .clock(clk), .reset(rst), .alu_op(alu_op), .alu_src(alu_src), .a(ra), .b(rb), .sext(imm_sext), 
+    .clock(clk), .reset(rst), inst_size(inst_size), .alu_op(alu_op), .alu_src(alu_src), .a(ra), .b(rb), .sext(imm_sext), 
     .branch_result(branch_result), .alu_result(alu_result), .wr_data(wr_data)
   );
 
   // ex pipeline register
   MEM mem_phase(
-    .address(alu_result), .write_data(DDT), .mem_read(mem_read), .mem_write(mem_write), .rd_data(DDT),
+    .address(alu_result), .write_data(DDT), .mem_read(mem_read), .mem_write(mem_write), inst_size(inst_size), .rd_data(DDT),
     .read_data(rd_data), .alu_result(alu_result), .addr(DAD), .size(mem_size), .write(WRITE), .mreq(MREQ), .wr_data(DDT)
   );
 
