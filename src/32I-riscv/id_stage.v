@@ -7,6 +7,7 @@ module ID (
   input [31:0] write_data,
 
   output [11:0] controls,
+  output [1:0] inst_size,
   // output [31:0] pc4_pass,
   //output [31:0] branch_addr,
   output [31:0] reg_dest,
@@ -28,7 +29,7 @@ module ID (
 
   // Control Unit
   wire mem_read, mem_write, reg_write, alu_src;
-  wire [1:0] mem_to_reg, jump, inst_size;
+  wire [1:0] mem_to_reg, jump;
   wire [3:0] alu_op;
 
   // Register File
