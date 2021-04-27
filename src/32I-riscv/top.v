@@ -5,7 +5,7 @@ module top (
   input ACKD_n,           // acknowledge from data memory [active low]
   input ACKI_n,           // acknowledge from instruction memory [active low]
   input [31:0] IDT,       // instruction data bus
-  input OINT_n,           // out interrupt [active low] 111 -> no interrupt
+  input [2:0] OINT_n,           // out interrupt [active low] 111 -> no interrupt
 
   inout [31:0] DDT,       // data data bus
 

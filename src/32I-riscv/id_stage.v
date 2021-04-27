@@ -43,7 +43,7 @@ module ID (
   );
 
   /* ----- Register File ----- */
-  rf32x32 reg_file(
+  rf32x32 regfile(
     .clk(clk), .reset(reset), .wr_n(reg_write), 
     .rd1_addr(ra_part), .rd2_addr(rb_part), .wr_addr(rd_part),
     .data_in(write_data),
