@@ -11,7 +11,7 @@ module pc_adder(
     if(reset)
       pc_out <= 32'h0x00010000;
     else
-      oc_out <= pc_in + 32'd4;
+      pc_out <= pc_in + 32'd4;
   end
 
 endmodule // pc
