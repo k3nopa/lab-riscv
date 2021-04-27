@@ -97,9 +97,7 @@ module Control(
 
   assign inst_size = 
     (lb || lbu || sb) ? BYTE :
-    (lh || lhu || sh) ? HALF :
-    (lw || sw)        ? WORD ;
-
+    (lh || lhu || sh) ? HALF : WORD;
 
   always @(*) begin
     if (reset) begin
