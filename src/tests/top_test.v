@@ -264,7 +264,7 @@ module top_test;
         for (i =0; i < 32; i = i+1)  // output register to Reg_data (Reg_out.dat)
           begin
             // change id_stage -> instantiated id stage's name
-             Reg_temp = u_top_1.id_stage.regfile.u_DW_ram_2r_w_s_dff.mem >> (BIT_WIDTH * i);
+             Reg_temp = u_top_1.id_phase.regfile.u_DW_ram_2r_w_s_dff.mem >> (BIT_WIDTH * i);
              $fwrite(Reg_data, "%d:%h\n", i, Reg_temp);
           end
         $fclose(Reg_data);
