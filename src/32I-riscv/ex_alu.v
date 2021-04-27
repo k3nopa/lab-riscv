@@ -18,7 +18,10 @@ module alu(
     SHR = 4'd7,
     SLT = 4'd8,
     SLTU = 4'd9,
-    AUIPC = 4'd10;
+    AUIPC = 4'd10,
+    BEQ = 4'd11,
+    BGT = 4'd12,
+    BLT = 4'd13;
 
 
   always @(*) begin
@@ -28,12 +31,13 @@ module alu(
       MUL: result = a * b;
       AND: result = a & b;
       OR : result = a | b;
-      XOR: resutl = a ^ b;
+      XOR: result = a ^ b;
       SHL: result = a << b;
       SHR: result = a >> b;
+      SLT: result = (a < b)  ? 1'b1 : 1'b0;
       BEQ: branch = (a == b) ? 1'b1 : 1'b0;
-      BGT: branch = (a > b) ? 1'b1 : 1'b0;
-      BLT: branch = (a < b) ? 1'b1 : 1'b0;
+      BGT: branch = (a > b)  ? 1'b1 : 1'b0;
+      BLT: branch = (a < b)  ? 1'b1 : 1'b0;
       default: begin 
         result = a + b;
         branch = 1'b0;
