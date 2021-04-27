@@ -7,8 +7,7 @@ module top (
   input [31:0] IDT,       // instruction data bus
   input OINT_n,           // out interrupt [active low] 111 -> no interrupt
 
-  input [31:0] DDT,       // data data bus
-  output [31:0] DDT,
+  inout [31:0] DDT,       // data data bus
 
   output [31:0] IAD,      // instruction address bus
   output [31:0] DAD,      // data address bus
@@ -30,7 +29,7 @@ module top (
 
   wire mem_read, mem_write, reg_write, alu_src;
   wire [1:0] mem_to_reg, jump, inst_size;
-  wire [3:0] alu_op
+  wire [3:0] alu_op;
   wire branch_result;
   wire [31:0] alu_result; // alu result
   wire [31:0] wr_data; // sext value
@@ -59,20 +58,20 @@ module top (
   // if pipeline register
   ID id_phase(
     .clk(clk), .reset(rst), .inst(IDT), .write_data(write_data), 
-    .controls(controls), .reg_dst(rd), .reg_a(ra), .reg_b(rb), .sext(imm_sext)
+    .controls(controls), .inst_size(inst_size), .reg_dest(rd), .reg_a(ra), .reg_b(rb), .sext(imm_sext)
   );
   assign {mem_read, mem_write, reg_write, alu_src, mem_to_reg, jump, alu_op} = controls;
 
   // id pipeline register
 
   EX ex_phase(
-    .clock(clk), .reset(rst), inst_size(inst_size), .alu_op(alu_op), .alu_src(alu_src), .a(ra), .b(rb), .sext(imm_sext), 
+    .clock(clk), .reset(rst), .alu_op(alu_op), .alu_src(alu_src), .a(ra), .b(rb), .sext(imm_sext), 
     .branch_result(branch_result), .alu_result(alu_result), .wr_data(wr_data)
   );
 
   // ex pipeline register
   MEM mem_phase(
-    .address(alu_result), .write_data(DDT), .mem_read(mem_read), .mem_write(mem_write), inst_size(inst_size), .rd_data(DDT),
+    .address(alu_result), .write_data(DDT), .mem_read(mem_read), .mem_write(mem_write), .inst_size(inst_size), .rd_data(DDT),
     .read_data(rd_data), .alu_result(alu_result), .addr(DAD), .size(mem_size), .write(WRITE), .mreq(MREQ), .wr_data(DDT)
   );
 

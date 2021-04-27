@@ -28,7 +28,7 @@ module ID (
 
   // Control Unit
   wire mem_read, mem_write, reg_write, alu_src;
-  wire [1:0] mem_to_reg, jump;
+  wire [1:0] mem_to_reg, jump, inst_size;
   wire [3:0] alu_op;
 
   // Register File
@@ -38,7 +38,7 @@ module ID (
   Control control_unit(
     .reset(reset), .inst(inst), 
     .mem_read(mem_read), .mem_write(mem_write), .reg_write(reg_write), 
-    .alu_src(alu_src), .mem_to_reg(mem_to_reg), .jump(jump), .alu_op(alu_op)
+    .alu_src(alu_src), .mem_to_reg(mem_to_reg), .jump(jump), .inst_size(inst_size), .alu_op(alu_op)
   );
 
   /* ----- Register File ----- */
