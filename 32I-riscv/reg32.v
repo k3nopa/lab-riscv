@@ -3,10 +3,8 @@ module Register (
   input clk,
   input [31:0] d,
 
-  output [31:0] q
+  output reg [31:0] q
 );
-
-  reg [31:0] q;
 
   always @(posedge clk or posedge reset) begin
     if (reset)
