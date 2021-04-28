@@ -3,8 +3,8 @@ module test_if();
    reg [31:0] pc_in;
    reg clk, reset;
 
-   wire [31:0] pc_out;
-   wire [31:0] test;
+   wire [31:0] pc4;
+   wire [31:0] inst_addr;
 
   always begin
     clk = 1'b1;
@@ -12,17 +12,26 @@ module test_if();
     #5;
   end
 
-  IF if_phase(.clock(clk), .reset(reset), .pc(pc_in), .pc4(pc_out), .inst(test));
+  IF if_phase(.clock(clk), .reset(reset), .pc_in(pc_in), .pc4(pc4), .inst_addr(inst_addr));
   
   initial begin
 
-    pc_in=32'h200;
     reset=1'b1;
     #10
-    pc_in=32'h204;
-    reset=1'b0;
-    #100
-    $finish;
 
+    reset=1'b0;
+
+    pc_in = pc4;
+    #10
+    pc_in = pc4;
+    #10
+    pc_in = pc4;
+    #10
+    pc_in = pc4;
+    #10
+    pc_in = pc4;
+    #10
+
+    $finish;
   end
-endmodule // test_adder
+endmodule
