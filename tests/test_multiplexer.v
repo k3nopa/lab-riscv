@@ -10,12 +10,14 @@ module test_multiplexer ();
   initial begin
     in1 = 32'b5;
     in2 = 32'b10;
-    select = 1
+    select = 1;
     #10
 
     in1 = 32'b5;
     in2 = 32'b10;
-    select = 0
+    select = 0;
     #10
+
+    $finish
   end
 endmodule
