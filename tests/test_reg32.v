@@ -1,9 +1,9 @@
 module test_reg32 ();
-  reg reset,
-  reg clk,
-  reg [31:0] d,
+  reg reset;
+  reg clk;
+  reg [31:0] d;
 
-  wire [31:0] q
+  wire [31:0] q;
 
   reg32 register(.reset(reset), .clk(clk), .d(d), .q(q));
 
@@ -25,6 +25,6 @@ module test_reg32 ();
     d = 1;
     #10
 
-    $finish
+    $finish;
   end
 endmodule
