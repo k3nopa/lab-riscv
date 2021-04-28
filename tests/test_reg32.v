@@ -5,7 +5,7 @@ module test_reg32 ();
 
   wire [31:0] q;
 
-  reg32 register(.reset(reset), .clk(clk), .d(d), .q(q));
+  Register register(.reset(reset), .clk(clk), .d(d), .q(q));
 
   always begin
     clk = 1'b1;
