@@ -18,6 +18,6 @@ module test_multiplexer ();
     select = 0;
     #10
 
-    $finish
+    $finish;
   end
 endmodule
