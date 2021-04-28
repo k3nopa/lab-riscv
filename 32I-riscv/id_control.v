@@ -47,7 +47,8 @@ module Control(
   wire lui   = (7'b0110111 == op_part);
   wire auipc = (7'b0010111 == op_part);
 
-  wire load_op = 7'b0000011;
+  wire [6:0] load_op = 7'b0000011;
+
   wire lb      = (load_op == op_part) && (3'b000 == f3_part);
   wire lh      = (load_op == op_part) && (3'b001 == f3_part);
   wire lw      = (load_op == op_part) && (3'b010 == f3_part);
@@ -55,13 +56,15 @@ module Control(
   wire lhu     = (load_op == op_part) && (3'b101 == f3_part);
   wire load    = (lb || lh || lw || lbu || lhu);
 
-  wire store_op = 7'b0100011;
+  wire [6:0] store_op = 7'b0100011;
+
   wire sb       = (store_op == op_part) && (3'b000 == f3_part);
   wire sh       = (store_op == op_part) && (3'b001 == f3_part);
   wire sw       = (store_op == op_part) && (3'b010 == f3_part);
   wire store    = (sb || sh || sw);
 
-  wire imm_op = 7'b0010011;
+  wire [6:0] imm_op = 7'b0010011;
+
   wire addi   = (imm_op == op_part) && (3'b000 == f3_part);
   wire slti   = (imm_op == op_part) && (3'b010 == f3_part);
   wire sltiu  = (imm_op == op_part) && (3'b011 == f3_part);
@@ -72,7 +75,8 @@ module Control(
   wire srli   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
   wire srai   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
-  wire r_op   = 7'b0110011;
+  wire [6:0] r_op   = 7'b0110011;
+
   wire add    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0000000 == f7_part);
   wire sub    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0100000 == f7_part);
   wire slt    = (r_op == op_part) && (3'b010 == f3_part);
