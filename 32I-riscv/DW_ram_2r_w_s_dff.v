@@ -126,7 +126,7 @@ module DW_ram_2r_w_s_dff (clk, rst_n, cs_n, wr_n, rd1_addr, rd2_addr,
       if ((cs_n | wr_n) !== 1'b1) begin
 
          if ((wr_addr ^ wr_addr) !== {`DW_addr_width{1'b0}}) begin
-            next_mem = {depth*data_width{1'bx}};
+            next_mem = {depth*data_width{1'b0}}; // before was 1'bx
 
          end 
          else begin
