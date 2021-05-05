@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3
-# /usr/bin/python3
+#!/usr/bin/python3
 
 import sys, getopt, os
 import subprocess
@@ -10,9 +9,7 @@ WARNING = "\033[93m"
 ERROR = "\033[91m"
 END = "\033[0m"
 
-# dev_path = "/home/naufal/dev"
-dev_path = "/Users/afiqnaufal/Documents/lab/github"
-
+dev_path = "/home/muhd/dev"
 
 def log(status, msg):
     if status == "info":
@@ -42,6 +39,15 @@ def usage():
     """
     print(help_banner)
 
+def cmd(cmd_list):
+    process = subprocess.Popen(
+        cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    stdout, stderr = process.communicate()
+    stdout = str(stdout, "utf-8")
+    stderr = str(stderr, "utf-8")
+    if stdout != "" or stderr != "":
+        print(stdout, stderr)
 
 def args():
     sim_type = ""
@@ -72,14 +78,11 @@ def args():
         log("error", "Simulation type is require")
         sys.exit()
 
-    if dep_path == "":
-        log("error", "Dependencies path for top verilog is require")
-        sys.exit()
-
     return sim_type, dep_path
 
 
-def prepare(sim_type):
+
+def simulate(sim_type, dep_path):
     target_path = os.path.join(dev_path, "simulation")
 
     current_path = os.path.dirname(os.path.abspath(__file__))
@@ -99,62 +102,48 @@ def prepare(sim_type):
         log("info", "Successfully created the directory")
 
     # Change to simulation folder
+    log("info", "Changing to simulation folder")
     os.chdir(target_path)
 
     # cp type's make folder
-    copy_path = ""
+    copy_path = "/home/muhd/dev"
     if sim_type == "store":
-        copy_path = os.path.join(dev_path, "test_pack/asm/store/")
+        new_copy_path = os.path.join(dev_path, "test_pack/asm/store/")
     elif sim_type == "hello":
-        copy_path = os.path.join(dev_path, "test_pack/c/hello/")
+        new_copy_path = os.path.join(dev_path, "test_pack/c/hello/")
     elif sim_type == "bitcnts":
-        copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/test/")
+        new_copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/test/")
     else:  # load
-        copy_path = os.path.join(dev_path, "test_pack/asm/load/")
-
-    process = subprocess.Popen(
-        ["cp", "-r", copy_path, "./"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+        new_copy_path = os.path.join(dev_path, "test_pack/asm/load/")
 
     log("info", "Preparing for makefile")
-    stdout, stderr = process.communicate()
-    stdout = str(stdout, "utf-8")
-    stderr = str(stderr, "utf-8")
-    if stdout == "" or stdout == "":
-        print(stdout, stderr)
-
-    process = subprocess.Popen(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd(["cp", f"{copy_path}/shm.tcl", "./"])
+    cmd(["cp", f"{copy_path}/top_test.v", "./"])
+    for file in os.listdir(new_copy_path):
+        cmd(["cp", new_copy_path+file, "./"])
 
     log("info", "Run makefile")
-    stdout, stderr = process.communicate()
-    stdout = str(stdout, "utf-8")
-    stderr = str(stderr, "utf-8")
-    if stdout == "" or stdout == "":
-        print(stdout, stderr)
+    cmd(["make"])
 
+    log("info", "Copy dependencies' files")
+    sim_cmd = ["xmverilog", "-s", "+access+rwc", "+tcl+shm.tcl", "top_test.v"]
 
-def simulate(dep_path):
     dep_path = os.path.join(dev_path, dep_path)
-    dep_files = [f for f in os.listdir(dep_path)]
-
-    process = subprocess.Popen(
-        ["xmverilog", "-s", "_access+rwc", "top_test.v"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    for file in os.listdir(dep_path):
+        cmd(["cp", dep_path+file, "./"])
+        if file != "top.v":
+            sim_cmd.append(file)
 
     log("info", "Run Simulation")
-    stdout, stderr = process.communicate()
-    stdout = str(stdout, "utf-8")
-    stderr = str(stderr, "utf-8")
-    if stdout == "" or stdout == "":
-        print(stdout, stderr)
+    print(" ".join(sim_cmd))
+    # cmd(sim_cmd)
 
 
 def run():
     (sim_type, dep_path) = args()
-    prepare(sim_type)
-    simulate(dep_path)
+    if dep_path == "":
+        dep_path = "32I-riscv/"
+    simulate(sim_type, dep_path)
 
 
 if __name__ == "__main__":
