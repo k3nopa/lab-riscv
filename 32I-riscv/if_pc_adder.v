@@ -9,7 +9,7 @@ module pc_adder(
 
   always @(*) begin
     if(reset)
-      pc_out <= 32'h0x00010000;
+      pc_out <= 32'h00010000;
     else
       pc_out <= pc_in + 32'd4;
   end
