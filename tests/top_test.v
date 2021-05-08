@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 `define IN_TOTAL 10000000
-`include "32I-riscv/top.v"
+`include "top.v"
 
 module top_test;
 
