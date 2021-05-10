@@ -35,12 +35,18 @@ module test_id ();
   end
 
   initial begin
+      $dumpfile("waveform.vcd");
+      $dumpvars(0, id_test);
     reset = 1;
     #10
     
     reset = 0;
 
     // LUI lui x1[00001], 10[1010]
+    /*
+        ra = 00001
+        imm = 1010
+    */
     inst = 32'b00000000_10100000_10110111;
     write_data = 1;
     #10
