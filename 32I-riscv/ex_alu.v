@@ -18,7 +18,7 @@ module alu(
     SHR = 4'd7,
     SLT = 4'd8,
     SLTU = 4'd9,
-    AUIPC = 4'd10,
+    LUI = 4'd10,
     BEQ = 4'd11,
     BGT = 4'd12,
     BLT = 4'd13;
@@ -26,6 +26,7 @@ module alu(
 
   always @(*) begin
     case (op)
+      LUI: result = b;
       ADD: result = a + b;
       SUB: result = a - b;
       MUL: result = a * b;

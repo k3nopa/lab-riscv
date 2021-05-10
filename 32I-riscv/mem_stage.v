@@ -20,9 +20,9 @@ module MEM (
 );
 
   localparam [1:0] 
-    BYTE = 2'b00,
+    WORD = 2'b00,
     HALF = 2'b01,
-    WORD = 2'b10;
+    BYTE = 2'b10;
     
   assign addr = address;
   assign write = (mem_write) ? 1 : 0;

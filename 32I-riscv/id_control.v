@@ -1,4 +1,3 @@
-// also handle write, size, mreq
 // 00 = word, 01 = half, 10 = byte 
 
 module Control(
@@ -11,8 +10,10 @@ module Control(
   output [3:0] alu_op
 );
   // Instructions' Type
-  localparam 
-    IMM = 7'b00110011,
+  localparam [6:0]
+    LUI = 7'b0110111,
+    AUIPC = 7'b0010111,
+    IMM = 7'b0010011,
     JAL = 7'b1101111,
     JALR = 7'b1100111,
     BRANCH = 7'b1100011,
@@ -31,12 +32,12 @@ module Control(
     ALU_SHR = 4'd7,
     ALU_SLT = 4'd8,
     ALU_SLTU = 4'd9,
-    ALU_AUIPC = 4'd10;
+    ALU_LUI = 4'd10;
   
   localparam [1:0]
-    BYTE = 2'b00,
+    WORD = 2'b00,
     HALF = 2'b01,
-    WORD = 2'b10;
+    BYTE = 2'b10;
 
   // Instructions' Format in Parts
   wire [6:0] op_part = inst[6:0];
@@ -89,7 +90,7 @@ module Control(
   wire sra    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
   assign alu_op = 
-    (add || addi || lui || load || store) ? ALU_ADD :
+    (add || addi || auipc || load || store) ? ALU_ADD :
     (andi || and_i)                       ? ALU_AND :
     (ori || or_i)                         ? ALU_OR :
     (xori || xor_i)                       ? ALU_XOR :
@@ -97,7 +98,7 @@ module Control(
     (sltiu || sltu)                       ? ALU_SLTU :
     (sll || slli)                         ? ALU_SHL :
     (srl || srli || sra || srai)          ? ALU_SHR :
-    (auipc)                               ? ALU_AUIPC : ALU_SUB;
+    (lui)                                 ? ALU_LUI : ALU_SUB;
 
   assign inst_size = 
     (lb || lbu || sb) ? BYTE :
@@ -116,7 +117,23 @@ module Control(
     else begin
 
       case (inst[6:0])
+        LUI: begin
+          mem_read = 1'bx;  
+          mem_write = 1'bx;  
+          reg_write = 1'b1;  
+          alu_src = 1'b1;  
+          mem_to_reg = 2'd2;  
+          jump = 2'bx;
+        end
+        AUIPC: begin
+        end
         IMM: begin
+          mem_read = 1'bx;  
+          mem_write = 1'bx;  
+          reg_write = 1'b1;  
+          alu_src = 1'b1;  
+          mem_to_reg = 2'd2;  
+          jump = 2'bx;
         end
         LOAD: begin
           mem_read = 1'b1;  
@@ -124,7 +141,7 @@ module Control(
           reg_write = 1'b1;  
           alu_src = 1'b1;  
           mem_to_reg = 2'b01;  
-          jump = 2'b00;
+          jump = 2'bx;
         end
         STORE: begin
           mem_read = 1'b0;  
@@ -132,7 +149,7 @@ module Control(
           reg_write = 1'b0;  
           alu_src = 1'b1;  
           mem_to_reg = 2'bxx;  
-          jump = 2'b00; 
+          jump = 2'bx; 
         end
         R_TYPE: begin 
           mem_read = 1'b0;  
@@ -140,7 +157,7 @@ module Control(
           reg_write = 1'b1;  
           alu_src = 1'b0;  
           mem_to_reg = 2'b00;  
-          jump = 2'b00;  
+          jump = 2'bx;  
         end
       endcase
       
