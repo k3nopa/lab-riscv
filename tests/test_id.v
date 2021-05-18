@@ -4,28 +4,28 @@ module test_id ();
   reg clk;
   reg reset;
 
-  reg [31:0] inst;
+  reg [31:0] inst, pc4;
   reg [31:0] write_data;
 
-  wire [11:0] controls;
+  wire [10:0] controls;
   wire [1:0] inst_size;
   wire [31:0] rd;
   wire [31:0] rs1;
   wire [31:0] rs2;
-  wire [31:0] imm;
-
+  wire [31:0] imm, branch_addr;
+    
   id_stage id_test(
-    .clk(clk),
+    .clock(clk),
     .reset(reset),
     .inst(inst),
     .write_data(write_data),
 
     .controls(controls),
     .inst_size(inst_size),
-    .reg_dest(rd),
     .reg_a(rs1),
     .reg_b(rs2),
-    .sext(imm)
+    .branch_addr(branch_addr),
+    .sign_extend(imm)
   );
 
   always begin
@@ -35,12 +35,13 @@ module test_id ();
   end
 
   initial begin
-    $dumpfile("waveform.vcd");
+    $dumpfile("test_id.vcd");
     $dumpvars(0, id_test);
-    reset = 1;
+    reset = 0;
     #10
     
-    reset = 0;
+    reset = 1;
+    pc4 = 32'h0001_0000;
 
     // LUI lui x1[00001], 10[1010]
     /*
