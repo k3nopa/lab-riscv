@@ -5,9 +5,11 @@ module test_alu();
   wire [31:0] result;
   wire branch;
 
-  alu i_alu(.a(src1), .b(src2), .alu_op(op), .result(result), .branch(branch));
+  ex_alu i_alu(.a(src1), .b(src2), .op(op), .result(result), .branch(branch));
   
   initial begin
+    $dumpfile("test_alu.vcd");
+    $dumpvars(0, i_alu);
 
     // add
     src1 = 32'd10;

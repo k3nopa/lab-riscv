@@ -14,7 +14,7 @@ module test_id ();
   wire [31:0] rs2;
   wire [31:0] imm;
 
-  ID id_test(
+  id_stage id_test(
     .clk(clk),
     .reset(reset),
     .inst(inst),
@@ -35,8 +35,8 @@ module test_id ();
   end
 
   initial begin
-      $dumpfile("waveform.vcd");
-      $dumpvars(0, id_test);
+    $dumpfile("waveform.vcd");
+    $dumpvars(0, id_test);
     reset = 1;
     #10
     

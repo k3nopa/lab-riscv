@@ -15,6 +15,8 @@ module test_if();
   IF if_phase(.clock(clk), .reset(reset), .pc_in(pc_in), .pc4(pc4), .inst_addr(inst_addr));
   
   initial begin
+    $dumpfile("waveform.vcd");
+    $dumpvars(0, test_if);
 
     reset=1'b1;
     #10
