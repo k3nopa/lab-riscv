@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! /usr/bin/python3
 
 import sys, getopt, os
 import subprocess
@@ -9,15 +9,15 @@ WARNING = "\033[93m"
 ERROR = "\033[91m"
 END = "\033[0m"
 
-dev_path = "/home/muhd/dev"
+dev_path = "/home/vagrant/dev"
 
 def log(status, msg):
     if status == "info":
-        print(f"{INFO}[{'INFO'}]{END} {msg}")
+        print(f"{INFO}['INFO']{END} {msg}")
     elif status == "error":
-        print(f"{ERROR}[{'ERROR'}]{END} {msg}")
+        print(f"{ERROR}['ERROR']{END} {msg}")
     elif status == "warning":
-        print(f"{WARNING}[{'WARNING'}]{END} {msg}")
+        print("{WARNING}['WARNING']{END} {msg}")
 
 
 def usage():
@@ -94,6 +94,10 @@ def simulate(sim_type, dep_path):
             os.mkdir("simulation")
         else:
             log("info", "Simulation directory already exists")
+            log("info", "Deleting Simulation directory")
+            cmd(["rm","-rf",  target_path])
+            log("info", "Creating simulation directory")
+            os.mkdir("simulation")
 
     except OSError:
         log("error", "Directory simulation can't be created")
@@ -106,7 +110,8 @@ def simulate(sim_type, dep_path):
     os.chdir(target_path)
 
     # cp type's make folder
-    copy_path = "/home/muhd/dev"
+    copy_path = "/home/vagrant/dev"
+
     if sim_type == "store":
         new_copy_path = os.path.join(dev_path, "test_pack/asm/store/")
     elif sim_type == "hello":
@@ -126,7 +131,7 @@ def simulate(sim_type, dep_path):
     cmd(["make"])
 
     log("info", "Copy dependencies' files")
-    sim_cmd = ["xmverilog", "-s", "+access+rwc", "+tcl+shm.tcl", "top_test.v"]
+    sim_cmd = ["cd", "simulation &&", "iverilog", "-o", "out", "top_test.v"]
 
     dep_path = os.path.join(dev_path, dep_path)
     for file in os.listdir(dep_path):
