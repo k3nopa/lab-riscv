@@ -1,41 +1,31 @@
-module EX (
-  input clock,
-  input reset,
+module ex_stage (
+    input [3:0] alu_op,
+    input alu_src,
+    input [31:0] a,
+    input [31:0] b,
+    input [31:0] sext,
 
-  // input [31:0] pc4,
-  input [3:0] alu_op,
-  input alu_src,
-  input [31:0] a,
-  input [31:0] b,
-  input [31:0] sext,
-
-  // output [31:0] pc4_pass,
-  output branch_result, 
-
-  // data memory
-  output [31:0] alu_result, // alu result
-  output [31:0] wr_data // sext value
+    output branch_result,
+    output [31:0] alu_result // alu result
 );
 
-  reg [31:0] alu_a, alu_b;
-  wire [31:0] alu_res;
+    wire [31:0] alu_a, alu_b, test;
 
-  // 2-mux
-  always @(*) begin
-    if (alu_src)
-      alu_b <= sext;
-    else
-      alu_b <= b;
+    function [63:0] src_mux(
+        input in_alu_src,
+        input [31:0] in_a, in_b, in_sext
+    );
+        begin
+            case (in_alu_src)
+                1 : src_mux = {in_a, in_sext};
+                0 : src_mux = {in_a, in_b};
+                default : src_mux = {in_a, in_b};
+            endcase
+        end
+    endfunction
 
-    alu_a <= a;
-  end
+    assign {alu_a, alu_b} = src_mux(alu_src, a, b, sext);
 
-  // alu  
-  alu alu_unit(.a(alu_a), .b(alu_b), .op(alu_op), .result(alu_res), .branch(branch_result));
-
-  // finish preparation
-  // assign pc4_pass = pc4;
-  assign alu_result = alu_res;
-  assign wr_data = b;
+    ex_alu alu(.a(alu_a), .b(alu_b), .op(alu_op), .result(alu_result), .branch(branch_result));
 
 endmodule

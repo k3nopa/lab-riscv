@@ -1,4 +1,4 @@
-module Register (
+module reg32 (
   input reset,
   input clk,
   input [31:0] d,
