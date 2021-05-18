@@ -1,0 +1,93 @@
+TOOLS_DIR = /opt/riscv
+GCC = ${TOOLS_DIR}/bin/riscv64-unknown-elf-gcc
+AS = ${TOOLS_DIR}/bin/riscv64-unknown-elf-as
+LD = ${TOOLS_DIR}/bin/riscv64-unknown-elf-ld
+OBJCOPY = ${TOOLS_DIR}/bin/riscv64-unknown-elf-objcopy
+HEXDUMP = hexdump
+MEMDAT = ${TOOLS_DIR}/bin/memdat
+OBJDUMP = ${TOOLS_DIR}/bin/riscv64-unknown-elf-objdump
+MABI = ilp32
+MARCH = rv32i
+OPTIMIZE = 0
+GCC_OPT = -mabi=${MABI} -march=${MARCH} -O${OPTIMIZE} -S 
+AS_OPT = -mabi=${MABI} -march=${MARCH}
+
+LD_OPT_PRE	= \
+-T ${TOOLS_DIR}/ldscripts/cpc.lds \
+-plugin \
+${TOOLS_DIR}/libexec/gcc/riscv64-unknown-elf/10.2.0/liblto_plugin.so \
+-plugin-opt=${TOOLS_DIR}/libexec/gcc/riscv64-unknown-elf/10.2.0/lto-wrapper \
+-plugin-opt=-fresolution=/tmp/ccupy4SS.res \
+-plugin-opt=-pass-through=-lgcc \
+-plugin-opt=-pass-through=-lc \
+-plugin-opt=-pass-through=-lgloss \
+-plugin-opt=-pass-through=-lgcc \
+--sysroot=${TOOLS_DIR}/riscv64-unknown-elf \
+-melf32lriscv \
+-L${TOOLS_DIR}/lib/gcc/riscv64-unknown-elf/10.2.0/rv32i/ilp32 \
+-L${TOOLS_DIR}/lib/gcc/riscv64-unknown-elf/10.2.0/../../../../riscv64-unknown-elf/lib/rv32i/ilp32 \
+-L${TOOLS_DIR}/riscv64-unknown-elf/lib/rv32i/ilp32 \
+-L${TOOLS_DIR}/lib/gcc/riscv64-unknown-elf/10.2.0 \
+-L${TOOLS_DIR}/lib/gcc/riscv64-unknown-elf/10.2.0/../../../../riscv64-unknown-elf/lib \
+-L${TOOLS_DIR}/riscv64-unknown-elf/lib 
+				
+LD_OPT_POST = -lgcc --start-group -lc -lgloss --end-group
+
+OBJCOPY_IMEM_OPT = -j .text -O binary
+OBJCOPY_DMEM_OPT = -j .data -O binary
+HEXDUMP_OPT = 	-v -e '1/4 "%08x" "\n"'
+SRC = ${TARGET}.c
+SRC_S = ${TARGET}.s
+SRC_O = ${TARGET}.o
+SRC_LO = ${TARGET}.lo
+IMEM_BIN = ${TARGET}_i.bin 
+IMEM_HEX = ${TARGET}_i.hex
+DMEM_BIN = ${TARGET}_d.bin 
+DMEM_HEX = ${TARGET}_d.hex
+IMEM = Imem.dat
+DMEM = Dmem.dat
+IMEMU = Imem_u
+DMEMU = Dmem_u
+SRC_DS = ${TARGET}.ds
+IMEMS = /opt/riscv/Imem_s.dat
+DMEMS = /opt/riscv/Dmem_s.dat
+
+all: ${IMEM} ${DMEM} ${SRC_DS}
+
+${SRC_DS}: ${SRC_LO}
+	${OBJDUMP} -Dz ${SRC_LO} > ${SRC_DS}
+
+${IMEM}: ${IMEM_HEX}
+	${MEMDAT} ${IMEM_HEX} ${IMEMU} 10000
+	cat ${IMEMS} >  ${IMEM}
+	cat ${IMEMU} >> ${IMEM}
+
+${DMEM}: ${DMEM_HEX}
+	${MEMDAT} ${DMEM_HEX} ${DMEMU} 80010000
+	cat ${DMEMS} >  ${DMEM}
+	cat ${DMEMU} >> ${DMEM}
+
+${IMEM_HEX}: ${IMEM_BIN}
+	${HEXDUMP} ${HEXDUMP_OPT} ${IMEM_BIN} > $@
+
+${DMEM_HEX}: ${DMEM_BIN}
+	${HEXDUMP} ${HEXDUMP_OPT} ${DMEM_BIN} > $@
+
+${IMEM_BIN}: ${SRC_LO}
+	${OBJCOPY} ${OBJCOPY_IMEM_OPT} ${SRC_LO} $@
+
+${DMEM_BIN}: ${SRC_LO}
+	${OBJCOPY} ${OBJCOPY_DMEM_OPT} ${SRC_LO} $@
+
+${SRC_LO}: ${SRC_O}
+	${LD} ${LD_OPT_PRE} ${SRC_O} ${LD_OPT_POST} -o $@
+
+${SRC_O}: ${SRC_S}
+	${AS} ${AS_OPT} -o $@ ${SRC_S}
+
+${SRC_S}: ${SRC}
+	${GCC} ${GCC_OPT} -o $@ ${SRC}
+	sed -i '/^main:$$/s/$$/\n\tli\tsp,0x80100000/g' ${SRC_S}
+
+clean:
+	rm -f Imem*.dat Dmem*.dat *.hex *.bin *.lo *.o *.s *.ds 
