@@ -1,21 +1,22 @@
 module multiplexer (
-    input clock,
     input [31:0] in1,
     input [31:0] in2,
     input select,
 
     output [31:0] out
 );
-    reg [31:0] _select;
     
-    always @(posedge clock) begin
-        case (select)
-            0 : _select = in1;
-            1 : _select = in2;
+    function [31:0] mux;
+        input [31:0] _in1, _in2, _select;
+        begin
+        case (_select)
+            0 : mux = _in1;
+            1 : mux = _in2;
             default: ;
         endcase
-    end
+        end
+    endfunction
     
-    assign out = _select;
+    assign out = mux(in1, in2, select);
 
 endmodule

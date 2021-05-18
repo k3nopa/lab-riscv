@@ -1,5 +1,5 @@
 module id_control(
-    input reset,
+    input reset,        // active at low
     input [31:0] inst,
 
     output reg mem_read, mem_write, reg_write, alu_src,
@@ -104,7 +104,7 @@ module id_control(
 
     // reg_write is active at low
     always @(*) begin
-        if (reset) begin
+        if (!reset) begin
             mem_read = 1'b0;
             mem_write = 1'b0;
             reg_write = 1'b1;

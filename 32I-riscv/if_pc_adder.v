@@ -1,21 +1,18 @@
 module if_pc_adder(
-    input clock,
-    input reset,
-    
+    input reset, // active at low
+
     input [31:0] pc,
     output [31:0] pc4
 );
-    
-    reg [31:0] current_pc;
-    
-    always @(posedge clock or posedge reset) begin
-        if(reset)
-            current_pc <= 32'h0001_0000;
-        else if (pc === 32'h0)
-            current_pc <= 32'h0001_0000;
+
+    function [31:0] pc_add4;
+    input [31:0] _pc;
+    input reset;
+        if(!reset)
+            pc_add4 = 32'h0001_0000;
         else
-            current_pc <= pc + 32'd4;
-    end
-    
-    assign pc4 = current_pc;
+            pc_add4 = _pc + 32'd4;
+    endfunction
+
+    assign pc4 = pc_add4(pc, reset);
 endmodule

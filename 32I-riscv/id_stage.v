@@ -1,13 +1,13 @@
 module id_stage (
     input clock,
-    input reset,
-    input [31:0] inst,
+    input reset,            // active at low
+    input [31:0] inst, pc4,
     input [31:0] write_data,
 
     output [10:0] controls,
     output [1:0] inst_size,
-    output [31:0] reg_a,
-    output [31:0] reg_b,
+    output [31:0] reg_a, reg_b,
+    output [31:0] branch_addr,
     output [31:0] sign_extend
 );
 
@@ -29,7 +29,7 @@ module id_stage (
 
     /* ----- Register File ----- */
     rf32x32 regfile(
-        .clk(clock), .reset(~reset), .wr_n(reg_write),
+        .clk(clock), .reset(reset), .wr_n(reg_write),
         .rd1_addr(ra_part), .rd2_addr(rb_part), .wr_addr(rd_part),
         .data_in(write_data),
         .data1_out(reg_a), .data2_out(reg_b)
@@ -38,9 +38,8 @@ module id_stage (
     id_sign_extend imm_extend(.clock(clock), .inst(inst), .extend_imm(sign_extend));
 
     /* ----- Address Adder ----- */
-    //assign branch_addr = pc4 + imm_branch;
+    assign branch_addr = pc4 + sign_extend;
 
-    // Assignments
     assign controls = {mem_read, mem_write, alu_src, mem_to_reg, jump, alu_op};
 
 endmodule
