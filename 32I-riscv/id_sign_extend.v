@@ -1,5 +1,4 @@
 module id_sign_extend(
-    input clock,
     input [31:0] inst,
 
     output [31:0] extend_imm
@@ -30,7 +29,7 @@ module id_sign_extend(
                 LUI     : sign_extend = imm_lui;
                 AUIPC   : sign_extend = imm_lui;
                 I_IMM   : sign_extend = imm_i;
-                LOAD    : sign_extend = imm_lui;
+                LOAD    : sign_extend = imm_i;
                 STORE   : sign_extend = imm_store;
                 default : sign_extend = 32'h0;
             endcase

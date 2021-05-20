@@ -18,7 +18,7 @@ module mem_stage (
 
     assign addr = address;
 
-    assign mreq = (mem_read) ? 1 : 0;
+    assign mreq = (mem_read || mem_write) ? 1 : 0;
     assign read_data = (mem_read) ? rd_data : 32'hx;
     
     assign write = (mem_write) ? 1 : 0;

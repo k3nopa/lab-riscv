@@ -2,8 +2,8 @@ module id_control(
     input reset, // active at low
     input [31:0] inst,
 
-    output mem_read, mem_write, reg_write, alu_src,
-    output [1:0] mem_to_reg, jump, // 11(3) -> jump
+    output reg mem_read, mem_write, reg_write, alu_src,
+    output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
     output [1:0] inst_size,
     output [3:0] alu_op
 );
@@ -88,73 +88,65 @@ module id_control(
     wire sra    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
     // reg_write is active at low
-    function control_signal;
-        input _reset;
-        input [31:0] _inst;
+    always @(*) begin
 
-        reg _mem_read, _mem_write, _reg_write, _alu_src;
-        reg [1:0] _mem_to_reg, _jump; // 11(3) -> _jump
-
-        begin
-            if (!_reset) begin
-                _mem_read = 1'b0;
-                _mem_write = 1'b0;
-                _reg_write = 1'b1;
-                _alu_src = 1'b0;
-                _mem_to_reg = 2'b00;
-                _jump = 2'b00;
-            end
-
-            else begin
-                case (_inst[6:0])
-                    LUI: begin
-                        _mem_read = 1'b0;
-                        _mem_write = 1'b0;
-                        _reg_write = 1'b0;
-                        _alu_src = 1'b1;
-                        _mem_to_reg = 2'd2;
-                        _jump = 2'bx;
-                    end
-                    AUIPC: begin
-                    end
-                    IMM: begin
-                        _mem_read = 1'bx;
-                        _mem_write = 1'bx;
-                        _reg_write = 1'b0;
-                        _alu_src = 1'b1;
-                        _mem_to_reg = 2'd2;
-                        _jump = 2'bx;
-                    end
-                    LOAD: begin
-                        _mem_read = 1'b1;
-                        _mem_write = 1'b0;
-                        _reg_write = 1'b0;
-                        _alu_src = 1'b1;
-                        _mem_to_reg = 2'b01;
-                        _jump = 2'bx;
-                    end
-                    STORE: begin
-                        _mem_read = 1'b0;
-                        _mem_write = 1'b1;
-                        _reg_write = 1'b1;
-                        _alu_src = 1'b1;
-                        _mem_to_reg = 2'bxx;
-                        _jump = 2'bx;
-                    end
-                    R_TYPE: begin
-                        _mem_read = 1'b0;
-                        _mem_write = 1'b0;
-                        _reg_write = 1'b0;
-                        _alu_src = 1'b0;
-                        _mem_to_reg = 2'b00;
-                        _jump = 2'bx;
-                    end
-                    default: ;
-                endcase
-            end
-            control_signal = {_mem_read, _mem_write, _alu_src, _mem_to_reg, _jump, _reg_write};
+        if (!reset) begin
+            mem_read = 1'b0;
+            mem_write = 1'b0;
+            reg_write = 1'b1;
+            alu_src = 1'b0;
+            mem_to_reg = 2'b00;
+            jump = 2'b00;
         end
-    endfunction
+
+        else begin
+            case (inst[6:0])
+                LUI: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src = 1'b1;
+                    mem_to_reg = 2'd2;
+                    jump = 2'bx;
+                end
+                AUIPC: begin
+                end
+                IMM: begin
+                    mem_read = 1'bx;
+                    mem_write = 1'bx;
+                    reg_write = 1'b0;
+                    alu_src = 1'b1;
+                    mem_to_reg = 2'd2;
+                    jump = 2'bx;
+                end
+                LOAD: begin
+                    mem_read = 1'b1;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src = 1'b1;
+                    mem_to_reg = 2'd1;
+                    jump = 2'bx;
+                end
+                STORE: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b1;
+                    reg_write = 1'b1;
+                    alu_src = 1'b1;
+                    mem_to_reg = 2'bxx;
+                    jump = 2'bx;
+                end
+                R_TYPE: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src = 1'b0;
+                    mem_to_reg = 2'd2;
+                    jump = 2'bx;
+                end
+                default: ;
+            endcase
+        end
+    end
 
     assign alu_op =
     (add || addi || auipc || load || store) ? ALU_ADD :
@@ -170,7 +162,5 @@ module id_control(
     assign inst_size =
     (lb || lbu || sb) ? BYTE :
     (lh || lhu || sh) ? HALF : WORD;
-
-    assign {mem_read, mem_write, alu_src, mem_to_reg, jump, reg_write} = control_signal(reset, inst);
 
 endmodule
