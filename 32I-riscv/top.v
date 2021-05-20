@@ -40,7 +40,7 @@ module top (
 
     // Id stage inputs and outputs
     wire mem_read, mem_write, alu_src, reg_write;
-    wire [1:0] mem_to_reg, jump;
+    wire [1:0] mem_to_reg, jump, mem_size;
     wire [3:0] alu_op;
     wire [31:0] reg_data_in;
 
@@ -56,7 +56,7 @@ module top (
     
     // Controls Pipelines
     reg ID_EX_MEM_READ, ID_EX_MEM_WRITE, ID_EX_ALU_SRC, ID_EX_REG_WRITE, EX_MEM_MEM_READ, EX_MEM_MEM_WRITE, EX_MEM_REG_WRITE, MEM_WB_REG_WRITE;
-    reg [1:0] ID_EX_MEM_TO_REG, EX_MEM_MEM_TO_REG, MEM_WB_MEM_TO_REG; 
+    reg [1:0] ID_EX_MEM_TO_REG, ID_EX_MEM_SIZE, EX_MEM_MEM_TO_REG, EX_MEM_MEM_SIZE, MEM_WB_MEM_TO_REG; 
     reg [3:0] ID_EX_ALU_OP;
     
     reg32 PC(
@@ -72,7 +72,7 @@ module top (
     id_stage id_phase(
         .reset(rst), .inst(IF_ID_INST), .pc4(IF_ID_PC4),
         .controls({mem_read, mem_write, alu_src, mem_to_reg, alu_op, reg_write, jump}),
-        .inst_size(SIZE),
+        .inst_size(mem_size),
         .branch_addr(branch_addr), .sign_extend(imm)
     );
     
@@ -90,8 +90,8 @@ module top (
     );
 
     mem_stage mem_phase(
-        .address(EX_MEM_ALU), .write_data(EX_MEM_RD2), .mem_read(EX_MEM_MEM_READ), .mem_write(EX_MEM_MEM_WRITE), .rd_data(DDT),
-        .read_data(mem_read_data), .addr(DAD), .write(WRITE), .mreq(MREQ), .wr_data(DDT)
+        .address(EX_MEM_ALU), .write_data(EX_MEM_RD2), .mem_read(EX_MEM_MEM_READ), .mem_write(EX_MEM_MEM_WRITE), .inst_size(EX_MEM_MEM_SIZE), .rd_data(DDT),
+        .access_size(SIZE), .read_data(mem_read_data), .addr(DAD), .write(WRITE), .mreq(MREQ), .wr_data(DDT)
     );
 
     wb_stage wb_phase(
@@ -118,6 +118,7 @@ module top (
         ID_EX_ALU_SRC <= alu_src;
         ID_EX_MEM_TO_REG <= mem_to_reg;
         ID_EX_ALU_OP <= alu_op;
+        ID_EX_MEM_SIZE <= mem_size;
     end
 
     always @(posedge clk) begin
@@ -130,6 +131,7 @@ module top (
         EX_MEM_MEM_READ <= ID_EX_MEM_READ;
         EX_MEM_MEM_WRITE <= ID_EX_MEM_WRITE;
         EX_MEM_MEM_TO_REG <= ID_EX_MEM_TO_REG;
+        EX_MEM_MEM_SIZE <= ID_EX_MEM_SIZE;
     end
 
     always @(posedge clk) begin

@@ -1,6 +1,7 @@
 module mem_stage (
     input [31:0] address,
     input [31:0] write_data,
+    input [1:0] inst_size,
     input mem_read,
     input mem_write,
 
@@ -10,6 +11,7 @@ module mem_stage (
     output [31:0] read_data,
 
     // data memory
+    output [1:0] access_size,
     output [31:0] addr,
     output write,
     output mreq,
@@ -17,6 +19,7 @@ module mem_stage (
 );
 
     assign addr = address;
+    assign access_size = inst_size;
 
     assign mreq = (mem_read || mem_write) ? 1 : 0;
     assign read_data = (mem_read) ? rd_data : 32'hx;
