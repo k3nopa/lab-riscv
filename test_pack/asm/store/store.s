@@ -1,11 +1,55 @@
 	.text
 main:
 	li	x16,	0x80010000
-	li	x17,	8
-	add	x15, 	x16,	x17
+	li	x16,	0x80010000
+	li	x16,	0x80010000
+	li	x16,	0x80010000
 
-	
+	lw	x8,	0x0(x16)
+	lw	x8,	0x0(x16)
+	lw	x8,	0x0(x16)
+	lw	x8,	0x0(x16)
+
+	sw	x8,	0x4(x16)
+	sw	x8,	0x4(x16)
+	sw	x8,	0x4(x16)
+	sw	x8,	0x4(x16)
+
+	sh	x8,	0x8(x16)
+	sh	x8,	0x8(x16)
+	sh	x8,	0x8(x16)
+	sh	x8,	0x8(x16)
+
+	sh	x8,	0xa(x16)
+	sh	x8,	0xa(x16)
+	sh	x8,	0xa(x16)
+	sh	x8,	0xa(x16)
+
+	sb	x8,	0xc(x16)
+	sb	x8,	0xc(x16)
+	sb	x8,	0xc(x16)
+	sb	x8,	0xc(x16)
+
+	sb	x8,	0xd(x16)
+	sb	x8,	0xd(x16)
+	sb	x8,	0xd(x16)
+	sb	x8,	0xd(x16)
+
+	sb	x8,	0xe(x16)
+	sb	x8,	0xe(x16)
+	sb	x8,	0xe(x16)
+	sb	x8,	0xe(x16)
+
+	sb	x8,	0xf(x16)
+	sb	x8,	0xf(x16)
+	sb	x8,	0xf(x16)
+	sb	x8,	0xf(x16)
+
 	li	x30, 0xff000000
+	li	x30, 0xff000000
+	li	x30, 0xff000000
+	li	x30, 0xff000000
+
 	sw	x0, 0x0(x30)
 
 	.data
