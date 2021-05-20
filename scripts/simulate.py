@@ -11,6 +11,7 @@ END = "\033[0m"
 
 dev_path = "/home/vagrant/dev"
 
+
 def log(status, msg):
     if status == "info":
         print(f"{INFO}['INFO']{END} {msg}")
@@ -39,15 +40,15 @@ def usage():
     """
     print(help_banner)
 
+
 def cmd(cmd_list):
-    process = subprocess.Popen(
-        cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    process = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     stdout = str(stdout, "utf-8")
     stderr = str(stderr, "utf-8")
     if stdout != "" or stderr != "":
         print(stdout, stderr)
+
 
 def args():
     sim_type = ""
@@ -81,7 +82,6 @@ def args():
     return sim_type, dep_path
 
 
-
 def simulate(sim_type, dep_path):
     target_path = os.path.join(dev_path, "simulation")
 
@@ -95,7 +95,7 @@ def simulate(sim_type, dep_path):
         else:
             log("info", "Simulation directory already exists")
             log("info", "Deleting Simulation directory")
-            cmd(["rm","-rf",  target_path])
+            cmd(["rm", "-rf", target_path])
             log("info", "Creating simulation directory")
             os.mkdir("simulation")
 
@@ -122,26 +122,20 @@ def simulate(sim_type, dep_path):
         new_copy_path = os.path.join(dev_path, "test_pack/asm/load/")
 
     log("info", "Preparing for makefile")
-    cmd(["cp", f"{copy_path}/shm.tcl", "./"])
     cmd(["cp", f"{copy_path}/top_test.v", "./"])
     for file in os.listdir(new_copy_path):
-        cmd(["cp", new_copy_path+file, "./"])
+        cmd(["cp", new_copy_path + file, "./"])
 
     log("info", "Run makefile")
     cmd(["make"])
 
-    log("info", "Copy dependencies' files")
-    sim_cmd = ["cd", "simulation &&", "iverilog", "-o", "out", "top_test.v"]
-
     dep_path = os.path.join(dev_path, dep_path)
     for file in os.listdir(dep_path):
-        cmd(["cp", dep_path+file, "./"])
-        if file != "top.v":
-            sim_cmd.append(file)
+        cmd(["cp", dep_path + file, "./"])
 
     log("info", "Run Simulation")
-    print(" ".join(sim_cmd))
-    # cmd(sim_cmd)
+    os.chdir(copy_path + "/simulation")
+    cmd(["iverilog", "-o", "out", "top_test.v"])
 
 
 def run():
