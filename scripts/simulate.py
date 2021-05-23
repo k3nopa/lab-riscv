@@ -31,6 +31,7 @@ def usage():
       asm:
         load
         store
+        skel
       c:
         hello
       MiBench:
@@ -114,6 +115,8 @@ def simulate(sim_type, dep_path):
 
     if sim_type == "store":
         new_copy_path = os.path.join(dev_path, "test_pack/asm/store/")
+    elif sim_type == "skel":
+        new_copy_path = os.path.join(dev_path, "test_pack/asm/skel/")
     elif sim_type == "hello":
         new_copy_path = os.path.join(dev_path, "test_pack/c/hello/")
     elif sim_type == "bitcnts":
