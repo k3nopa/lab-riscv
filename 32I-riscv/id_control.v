@@ -15,7 +15,7 @@ module id_control(
     IMM = 7'b0010011,
     LOAD = 7'b0000011,
     STORE = 7'b0100011,
-    R_TYPE = 7'b011001,
+    R_TYPE = 7'b0110011,
     BRANCH = 7'b1100011,
     JAL = 7'b1101111,
     JALR = 7'b1100111;
@@ -125,7 +125,7 @@ module id_control(
         end
 
         else begin
-            case (inst[6:0])
+            case (op_part)
                 LUI: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
@@ -134,11 +134,9 @@ module id_control(
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
-                AUIPC: begin
-                end
                 IMM: begin
-                    mem_read = 1'bx;
-                    mem_write = 1'bx;
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
                     reg_write = 1'b0;
                     alu_src = 1'b1;
                     mem_to_reg = 2'd2;
