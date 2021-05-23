@@ -1,4 +1,5 @@
 module ex_alu(
+    input is_signed,
     input [31:0] a,
     input [31:0] b,
     input [3:0] op,
@@ -16,10 +17,10 @@ module ex_alu(
     SHL = 4'd6,
     SHR = 4'd7,
     SLT = 4'd8,
-    SLTU = 4'd9,
-    LUI = 4'd10,
-    BEQ = 4'd11,
-    BGT = 4'd12,
+    LUI = 4'd9,
+    BEQ = 4'd10,
+    BNE = 4'd11,
+    BGE = 4'd12,
     BLT = 4'd13;
 
 
@@ -49,12 +50,31 @@ module ex_alu(
     function _branch;
         input [3:0] in_op;
         input [31:0] in_a, in_b;
+        
+        reg unsigned in_u_a, in_u_b;
 
         begin
             case(in_op)
                 BEQ: _branch = (in_a == in_b) ? 1'b1 : 1'b0;
-                BGT: _branch = (in_a > in_b)  ? 1'b1 : 1'b0;
-                BLT: _branch = (in_a < in_b)  ? 1'b1 : 1'b0;
+                BNE: _branch = (in_a != in_b) ? 1'b1 : 1'b0;
+                BGE: begin
+                    if(is_signed)
+                        _branch = (in_a >= in_b)  ? 1'b1 : 1'b0;
+                    else begin
+                        in_u_a = in_a;
+                        in_u_b = in_b;
+                        _branch = (in_u_a >= in_u_b)  ? 1'b1 : 1'b0;
+                        end
+                end
+                BLT: begin
+                    if(is_signed)
+                        _branch = (in_a < in_b)  ? 1'b1 : 1'b0;
+                    else begin
+                        in_u_a = in_a;
+                        in_u_b = in_b;
+                        _branch = (in_u_a < in_u_b)  ? 1'b1 : 1'b0;
+                        end
+                end
                 default: begin
                     _branch = 1'b0;
                 end

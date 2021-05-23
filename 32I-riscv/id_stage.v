@@ -1,7 +1,8 @@
 module id_stage (
     input reset,            // active at low
     input [31:0] inst, pc4,
-
+    
+    output is_signed,
     output [11:0] controls,
     output [1:0] inst_size,
     output [31:0] branch_addr,
@@ -17,7 +18,7 @@ module id_stage (
     id_control control_unit(
         .reset(reset), .inst(inst),
         .mem_read(mem_read), .mem_write(mem_write), .reg_write(reg_write),
-        .alu_src(alu_src), .mem_to_reg(mem_to_reg), .jump(jump), .inst_size(inst_size), .alu_op(alu_op)
+        .alu_src(alu_src), .mem_to_reg(mem_to_reg), .jump(jump), .inst_size(inst_size), .is_signed(is_signed), .alu_op(alu_op)
     );
     
     id_sign_extend imm_extend(.inst(inst), .extend_imm(sign_extend));

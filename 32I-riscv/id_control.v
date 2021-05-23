@@ -4,6 +4,7 @@ module id_control(
 
     output reg mem_read, mem_write, reg_write, alu_src,
     output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
+    output is_signed,
     output [1:0] inst_size,
     output [3:0] alu_op
 );
@@ -12,12 +13,12 @@ module id_control(
     LUI = 7'b0110111,
     AUIPC = 7'b0010111,
     IMM = 7'b0010011,
-    JAL = 7'b1101111,
-    JALR = 7'b1100111,
-    BRANCH = 7'b1100011,
     LOAD = 7'b0000011,
     STORE = 7'b0100011,
-    R_TYPE = 7'b0110011;
+    R_TYPE = 7'b011001,
+    BRANCH = 7'b1100011,
+    JAL = 7'b1101111,
+    JALR = 7'b1100111;
 
     localparam [3:0]
     ALU_ADD = 4'd0,
@@ -29,8 +30,11 @@ module id_control(
     ALU_SHL = 4'd6,
     ALU_SHR = 4'd7,
     ALU_SLT = 4'd8,
-    ALU_SLTU = 4'd9,
-    ALU_LUI = 4'd10;
+    ALU_LUI = 4'd9,
+    ALU_BEQ = 4'd10,
+    ALU_BNE = 4'd11,
+    ALU_BGE = 4'd12,
+    ALU_BLT = 4'd13;
 
     localparam [1:0]
     WORD = 2'b00,
@@ -42,10 +46,11 @@ module id_control(
     wire [2:0] f3_part = inst[14:12];
     wire [6:0] f7_part = inst[31:25];
 
-    // Instructions
+    // Instructions Decoder
     wire lui   = (7'b0110111 == op_part);
     wire auipc = (7'b0010111 == op_part);
 
+    // Load Instructions
     wire [6:0] load_op = 7'b0000011;
 
     wire lb      = (load_op == op_part) && (3'b000 == f3_part);
@@ -55,6 +60,7 @@ module id_control(
     wire lhu     = (load_op == op_part) && (3'b101 == f3_part);
     wire load    = (lb || lh || lw || lbu || lhu);
 
+    // Store Instructions
     wire [6:0] store_op = 7'b0100011;
 
     wire sb       = (store_op == op_part) && (3'b000 == f3_part);
@@ -62,6 +68,7 @@ module id_control(
     wire sw       = (store_op == op_part) && (3'b010 == f3_part);
     wire store    = (sb || sh || sw);
 
+    // I-Type Instructions
     wire [6:0] imm_op = 7'b0010011;
 
     wire addi   = (imm_op == op_part) && (3'b000 == f3_part);
@@ -74,7 +81,8 @@ module id_control(
     wire srli   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
     wire srai   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
 
-    wire [6:0] r_op   = 7'b0110011;
+    // R-Type Instructions
+    wire [6:0] r_op = 7'b0110011;
 
     wire add    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0000000 == f7_part);
     wire sub    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0100000 == f7_part);
@@ -86,6 +94,23 @@ module id_control(
     wire sll    = (r_op == op_part) && (3'b001 == f3_part);
     wire srl    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
     wire sra    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+
+    // Branch-Type Instructions
+    wire [6:0] b_op = 7'b1100011;
+
+    wire beq     = (b_op == op_part) && (3'b000 == f3_part);
+    wire bne     = (b_op == op_part) && (3'b001 == f3_part);
+    wire blt     = (b_op == op_part) && (3'b100 == f3_part);
+    wire bge     = (b_op == op_part) && (3'b101 == f3_part);
+    wire bltu    = (b_op == op_part) && (3'b110 == f3_part);
+    wire bgeu    = (b_op == op_part) && (3'b111 == f3_part);
+
+    // Jump-Type Instructions
+    wire [6:0] j_op = 7'b1101111;
+    wire [6:0] jr_op = 7'b1100111;
+
+    wire jal     = (j_op == op_part);
+    wire jalr    = (jr_op == op_part);
 
     // reg_write is active at low
     always @(*) begin
@@ -143,6 +168,30 @@ module id_control(
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
+                BRANCH: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src = 1'b0;
+                    mem_to_reg = 2'dx;
+                    jump = 2'bx;
+                end
+                JAL: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b1;
+                    alu_src = 1'b0;
+                    mem_to_reg = 2'd2;
+                    jump = 2'd3;
+                end
+                JALR: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src = 1'b0;
+                    mem_to_reg = 2'd2;
+                    jump = 2'd3;
+                end
                 default: ;
             endcase
         end
@@ -153,14 +202,19 @@ module id_control(
     (andi || and_i)                         ? ALU_AND :
     (ori || or_i)                           ? ALU_OR  :
     (xori || xor_i)                         ? ALU_XOR :
-    (slti || slt)                           ? ALU_SLT :
-    (sltiu || sltu)                         ? ALU_SLTU :
+    (slti || slt || sltiu || sltu)          ? ALU_SLT :
     (sll || slli)                           ? ALU_SHL :
     (srl || srli || sra || srai)            ? ALU_SHR :
+    (beq)                                   ? ALU_BEQ :
+    (bne)                                   ? ALU_BNE :
+    (bge || bgeu)                           ? ALU_BGE :
+    (blt || bltu)                           ? ALU_BLT :
     (lui)                                   ? ALU_LUI : ALU_SUB;
 
     assign inst_size =
     (lb || lbu || sb) ? BYTE :
     (lh || lhu || sh) ? HALF : WORD;
+
+    assign is_signed = (lbu || lhu || sltu || sltiu || bltu || bgeu) ? 1'b0 : 1'b1;
 
 endmodule
