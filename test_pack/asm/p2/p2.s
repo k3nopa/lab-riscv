@@ -65,7 +65,7 @@ main:
 	srli	x10,	x8,	4
 	sw	x10,	0x44(x16)
 
-	sra	x10,	x8,	4
+	srai	x10,	x8,	4
 	sw	x10,	0x48(x16)
 
 	lh	x8,	0x3e(x16)
@@ -123,10 +123,10 @@ main:
 L1:
 	jal	L2
 	sb	x10,	0x6d(x16)
-	jr	x31
+	ret
 L2:
 	ori	x10,	x10,	0x3
-	jalr	x31
+	jalr	x1
 L3:
 	xor	x8,	x8,	x8
 	addi	x8,	x8,	0x03
@@ -193,7 +193,7 @@ M4:
 	j	L21
 L20:
 	ori	x10,	x10,	0x7
-	jr	x31
+	ret
 L21:
 	bltz	x8,	L22
 	sb	x10,	0x7f(x16)
@@ -226,12 +226,12 @@ M8:
 	j	L29
 L28:
 	ori	x10,	x10,	0xf
-	jr	x31
+	ret
 L29:
 	jal	L30
 	j	L31
 L30:
-	jr	x31
+	ret
 L31:
 	ori	x10,	x10,	0x1f
 	sb	x10,	0x86(x16)
