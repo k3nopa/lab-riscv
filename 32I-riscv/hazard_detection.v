@@ -25,10 +25,12 @@ module hazard_detection(
     function [4:0] hazard_check(input [31:0] _current, _before);
         begin
             /* 
-             *  load & branch have no dest reg
-             *  lui & auipc & jal dont have src reg  
+             *  load & branch have no dest reg.
+             *  lui & auipc & jal dont have src reg.
+             *  Thus these instructions are not valid to be check for hazards.
+             *  To simplify, the condition needed to be checking for hazards are have both dest and src registers
              */
-            if ( (_current[6:0] !== LUI || _current[6:0] !== AUIPC || _current[6:0] !== JAL) && _before[6:0] !== STORE && _before[6:0] !== BRANCH ) begin
+            if ( _current[6:0] !== LUI && _current[6:0] !== AUIPC && _current[6:0] !== JAL && _before[6:0] !== STORE && _before[6:0] !== BRANCH ) begin
 
                 // compare current inst at id to inst at mem(if inst exist)
                 if (next) begin

@@ -39,7 +39,7 @@ module top (
     wire [31:0] pc, pc_in;
     wire pc_src;
 
-    wire mem_read, mem_write, alu_src, reg_write, is_signed;
+    wire mem_read, mem_write, alu_src_a, alu_src_b, reg_write, is_signed;
     wire [1:0] mem_to_reg, jump, mem_size;
     wire [3:0] alu_op;
     wire [31:0] reg_data_in;
@@ -47,16 +47,16 @@ module top (
     wire [31:0] branch_addr, mem_read_data, reg_read_data1, reg_read_data2, imm, alu_result;
 
     // Pipelines
-    reg [31:0] IF_ID_PC4, ID_EX_PC4, EX_MEM_PC4, MEM_WB_PC4;
+    reg [31:0] IF_ID_PC, IF_ID_PC4, ID_EX_PC, ID_EX_PC4, EX_MEM_PC4, MEM_WB_PC4;
     reg [31:0] IF_ID_INST, ID_EX_INST, EX_MEM_INST, MEM_WB_INST;
     reg [31:0] EX_MEM_ALU, MEM_WB_ALU;
     reg [31:0] ID_EX_RD2, EX_MEM_RD2;
     reg [31:0] ID_EX_BRANCH_ADDR, ID_EX_RD1, ID_EX_SEXT, MEM_WB_MDATA;
 
     // Controls Pipelines
-    reg ID_EX_MEM_READ, ID_EX_MEM_WRITE, ID_EX_ALU_SRC, ID_EX_REG_WRITE, ID_EX_SIGNED,
-        EX_MEM_MEM_READ, EX_MEM_MEM_WRITE, EX_MEM_REG_WRITE, EX_MEM_SIGNED,
-        MEM_WB_REG_WRITE;
+    reg ID_EX_MEM_READ, ID_EX_MEM_WRITE, ID_EX_ALU_SRC_A, ID_EX_ALU_SRC_B, ID_EX_REG_WRITE, ID_EX_SIGNED,
+    EX_MEM_MEM_READ, EX_MEM_MEM_WRITE, EX_MEM_REG_WRITE, EX_MEM_SIGNED,
+    MEM_WB_REG_WRITE;
 
     reg [1:0] ID_EX_MEM_TO_REG, ID_EX_MEM_SIZE, EX_MEM_MEM_TO_REG, EX_MEM_MEM_SIZE, MEM_WB_MEM_TO_REG;
     reg [3:0] ID_EX_ALU_OP;
@@ -78,8 +78,8 @@ module top (
     );
 
     id_stage id_phase(
-        .reset(rst), .inst(IF_ID_INST), .pc4(IF_ID_PC4),
-        .controls({mem_read, mem_write, alu_src, mem_to_reg, alu_op, reg_write, jump}),
+        .reset(rst), .inst(IF_ID_INST), .pc(IF_ID_PC),
+        .controls({mem_read, mem_write, alu_src_a, alu_src_b, mem_to_reg, alu_op, reg_write, jump}),
         .inst_size(mem_size), .is_signed(is_signed),
         .branch_addr(branch_addr), .sign_extend(imm)
     );
@@ -93,7 +93,7 @@ module top (
     );
 
     ex_stage ex_phase(
-        .alu_op(ID_EX_ALU_OP), .alu_src(ID_EX_ALU_SRC), .is_signed(ID_EX_SIGNED), .a(ID_EX_RD1), .b(ID_EX_RD2), .sext(ID_EX_SEXT),
+        .alu_op(ID_EX_ALU_OP), .alu_src_a(ID_EX_ALU_SRC_A), .alu_src_b(ID_EX_ALU_SRC_B), .is_signed(ID_EX_SIGNED), .pc(ID_EX_PC), .a(ID_EX_RD1), .b(ID_EX_RD2), .sext(ID_EX_SEXT),
         .branch_result(pc_src), .alu_result(alu_result)
     );
 
@@ -134,103 +134,70 @@ module top (
             hold_inst <= IDT;
         end
 
-    else begin
-        if (hold_inst !== 32'hx) begin
-            hold_inst <= IDT;
-            IF_ID_INST <= hold_inst;
-                end
+        else begin
+            if (hold_inst !== 32'hx) begin
+                hold_inst <= IDT;
+                IF_ID_INST <= hold_inst;
+            end
             else
                 IF_ID_INST <= IDT;
         end
-
+        IF_ID_PC <= pc;
         IF_ID_PC4 <= pc_in;
     end
-    
+
     /*
      * ID/EX Pipeline
      */
     always @(posedge clk) begin
+        /*
+         * Pipeline Flushing
+         */
+        if(pc_src) begin
+            ID_EX_PC <= 32'h0;
+            ID_EX_PC4 <= 32'h0;
+            ID_EX_INST <= 32'h0;
+            ID_EX_RD2 <= 32'h0;
+            ID_EX_BRANCH_ADDR <= 32'h0;
+            ID_EX_RD1 <= 32'h0;
+            ID_EX_SEXT <= 32'h0;
 
-        ID_EX_PC4 <= IF_ID_PC4;
-        ID_EX_INST <= IF_ID_INST;
-        ID_EX_BRANCH_ADDR <= branch_addr;
+            // Controls Pipelines
+            ID_EX_MEM_READ <= 1'b0;
+            ID_EX_MEM_WRITE <= 1'b0;
+            ID_EX_ALU_SRC_A <= 1'bx;
+            ID_EX_ALU_SRC_B <= 1'bx;
+            ID_EX_REG_WRITE <= 1'b1;
+            ID_EX_SIGNED <= 1'bx;
 
-        if (is_hazard1) begin
-            case(hazard_reg1)
-                1 : begin
-                    // forward from ex stage (rs1)
-                    ID_EX_RD1 <= alu_result;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-                2 : begin
-                    // forward from ex stage (rs2)
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= alu_result;
-                end
-                3 : begin
-                    // forward from mem stage (rs1)
-                    ID_EX_RD1 <= EX_MEM_ALU;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-                4 : begin
-                    // forward from mem stage (rs2)
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= EX_MEM_ALU ;
-                end
-                default : begin
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-            endcase
+            ID_EX_MEM_TO_REG <= 2'b0;
+            ID_EX_MEM_SIZE <= 2'bx;
+
+            ID_EX_ALU_OP <= 4'bx;
+
+            // Forwarding & Hazard Detection & Stall
+            stalling <= 1'bx;
+            hold_inst <= 32'hx;
         end
-
-        else if (is_hazard2) begin
-            case(hazard_reg2)
-                1 : begin
-                    // forward from ex stage (rs1)
-                    ID_EX_RD1 <= EX_MEM_ALU;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-                2 : begin
-                    // forward from ex stage (rs2)
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= EX_MEM_ALU;
-                end
-                3 : begin
-                    // forward from mem stage (rs1)
-                    ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-                4 : begin
-                    // forward from mem stage (rs2) 
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
-                end
-                default : begin
-                    ID_EX_RD1 <= reg_read_data1;
-                    ID_EX_RD2 <= reg_read_data2;
-                end
-            endcase
-        end
-
         else begin
-            ID_EX_RD1 <= reg_read_data1;
-            ID_EX_RD2 <= reg_read_data2;
+            ID_EX_PC <= IF_ID_PC;
+            ID_EX_PC4 <= IF_ID_PC4;
+            ID_EX_INST <= IF_ID_INST;
+            ID_EX_BRANCH_ADDR <= branch_addr;
+            ID_EX_SEXT <= imm;
+
+            ID_EX_MEM_READ <= mem_read;
+            ID_EX_MEM_WRITE <= mem_write;
+            ID_EX_REG_WRITE <= reg_write;
+            ID_EX_ALU_SRC_A <= alu_src_a;
+            ID_EX_ALU_SRC_B <= alu_src_b;
+            ID_EX_MEM_TO_REG <= mem_to_reg;
+            ID_EX_ALU_OP <= alu_op;
+            ID_EX_MEM_SIZE <= mem_size;
+            ID_EX_SIGNED <= is_signed;
         end
-
-
-        ID_EX_SEXT <= imm;
-
-        ID_EX_MEM_READ <= mem_read;
-        ID_EX_MEM_WRITE <= mem_write;
-        ID_EX_REG_WRITE <= reg_write;
-        ID_EX_ALU_SRC <= alu_src;
-        ID_EX_MEM_TO_REG <= mem_to_reg;
-        ID_EX_ALU_OP <= alu_op;
-        ID_EX_MEM_SIZE <= mem_size;
-        ID_EX_SIGNED <= is_signed;
     end
-    
+
     /*
      * EX/MEM Pipeline
      */
@@ -258,6 +225,123 @@ module top (
 
         MEM_WB_REG_WRITE <= EX_MEM_REG_WRITE;
         MEM_WB_MEM_TO_REG <= EX_MEM_MEM_TO_REG;
+    end
+
+    /*
+     * Hazard Handling
+     */
+    always @(posedge clk) begin
+        if (is_hazard1 && is_hazard2) begin
+            case(hazard_reg2)
+                1 : begin
+                    // forward from ex stage (rs1)
+                    ID_EX_RD1 <= EX_MEM_ALU;
+                end
+                2 : begin
+                    // forward from ex stage (rs2)
+                    ID_EX_RD2 <= EX_MEM_ALU;
+                end
+                3 : begin
+                    // forward from mem stage (rs1)
+                    // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
+                    ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+                end
+                4 : begin
+                    // forward from mem stage (rs2) 
+                    // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
+                    ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+
+                end
+                default : ;
+            endcase
+
+            case(hazard_reg1)
+                1 : begin
+                    // forward from ex stage (rs1)
+                    ID_EX_RD1 <= alu_result;
+                end
+                2 : begin
+                    // forward from ex stage (rs2)
+                    ID_EX_RD2 <= alu_result;
+                end
+                3 : begin
+                    // forward from mem stage (rs1)
+                    ID_EX_RD1 <= alu_result;
+                end
+                4 : begin
+                    // forward from mem stage (rs2)
+                    ID_EX_RD2 <= alu_result;
+                end
+                default : ;
+            endcase
+
+        end
+
+        else if (is_hazard1 || is_hazard2) begin
+            if (is_hazard1) begin
+                case(hazard_reg1)
+                    1 : begin
+                        // forward from ex stage (rs1)
+                        ID_EX_RD1 <= alu_result;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                    2 : begin
+                        // forward from ex stage (rs2)
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= alu_result;
+                    end
+                    3 : begin
+                        // forward from mem stage (rs1)
+                        ID_EX_RD1 <= alu_result;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                    4 : begin
+                        // forward from mem stage (rs2)
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= alu_result ;
+                    end
+                    default : begin
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                endcase
+            end
+
+            if (is_hazard2) begin
+                case(hazard_reg2)
+                    1 : begin
+                        // forward from ex stage (rs1)
+                        ID_EX_RD1 <= EX_MEM_ALU;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                    2 : begin
+                        // forward from ex stage (rs2)
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= EX_MEM_ALU;
+                    end
+                    3 : begin
+                        // forward from mem stage (rs1)
+                        ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                    4 : begin
+                        // forward from mem stage (rs2) 
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
+
+                    end
+                    default : begin
+                        ID_EX_RD1 <= reg_read_data1;
+                        ID_EX_RD2 <= reg_read_data2;
+                    end
+                endcase
+            end
+        end
+
+        else begin
+            ID_EX_RD1 <= reg_read_data1;
+            ID_EX_RD2 <= reg_read_data2;
+        end
     end
 
 endmodule

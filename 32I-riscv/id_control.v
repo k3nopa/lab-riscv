@@ -2,7 +2,7 @@ module id_control(
     input reset, // active at low
     input [31:0] inst,
 
-    output reg mem_read, mem_write, reg_write, alu_src,
+    output reg mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
     output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
     output is_signed,
     output [1:0] inst_size,
@@ -119,9 +119,10 @@ module id_control(
             mem_read = 1'b0;
             mem_write = 1'b0;
             reg_write = 1'b1;
-            alu_src = 1'b0;
-            mem_to_reg = 2'b00;
-            jump = 2'b00;
+            alu_src_a = 1'bx;
+            alu_src_b = 1'bx;
+            mem_to_reg = 2'bxx;
+            jump = 2'bxx;
         end
 
         else begin
@@ -130,7 +131,8 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b1;
+                    alu_src_a = 1'bx;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
@@ -138,7 +140,8 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b1;
+                    alu_src_a = 1'b1;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
@@ -146,7 +149,8 @@ module id_control(
                     mem_read = 1'b1;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b1;
+                    alu_src_a = 1'b1;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'd1;
                     jump = 2'bx;
                 end
@@ -154,7 +158,8 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b1;
                     reg_write = 1'b1;
-                    alu_src = 1'b1;
+                    alu_src_a = 1'b1;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'bxx;
                     jump = 2'bx;
                 end
@@ -162,7 +167,8 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b0;
+                    alu_src_a = 1'b1;
+                    alu_src_b = 1'b0;
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
@@ -170,15 +176,17 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b0;
+                    alu_src_a = 1'b1;
+                    alu_src_b = 1'b0;
                     mem_to_reg = 2'dx;
                     jump = 2'bx;
                 end
                 JAL: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
-                    reg_write = 1'b1;
-                    alu_src = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src_a = 1'b0;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'd2;
                     jump = 2'd3;
                 end
@@ -186,7 +194,8 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src = 1'b0;
+                    alu_src_a = 1'b0;
+                    alu_src_b = 1'b1;
                     mem_to_reg = 2'd2;
                     jump = 2'd3;
                 end
