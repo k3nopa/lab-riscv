@@ -1,11 +1,16 @@
 	.text    # text section
 main:
-	lui	x1,	0x4
-	lui	x2,	0x8
+	li	x1,	0x2
+	li	x1,	0x3
+	jal	x3,	calc
 
-	add	x3,	x1,	x2
-
-	lui	x8,	0xff000000
+stop:
+	li	x8,	0xff000000
 	sw	x0,	0(x8)
 
+calc:
+	add	x4,	x1,	x2
+	jr	x3
+
 	.data    # data section
+	.word	0x01028182
