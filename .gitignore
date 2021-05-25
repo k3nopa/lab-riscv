@@ -1,6 +1,6 @@
-./.DS_Store
-./*.vcd
-./*.gtkw
-./shm.tcl
-./simulation
-./out
+**/.DS_Store
+**/*.vcd
+**/*.gtkw
+**/shm.tcl
+**/simulation
+**/out
