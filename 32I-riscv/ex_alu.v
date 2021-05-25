@@ -50,30 +50,30 @@ module ex_alu(
     function _branch;
         input [3:0] in_op;
         input [31:0] in_a, in_b;
-        
-        reg unsigned in_u_a, in_u_b;
+
+        reg signed in_s_a, in_s_b;
 
         begin
             case(in_op)
                 BEQ: _branch = (in_a == in_b) ? 1'b1 : 1'b0;
                 BNE: _branch = (in_a != in_b) ? 1'b1 : 1'b0;
                 BGE: begin
-                    if(is_signed)
+                    if(is_signed) begin
+                        in_s_a = in_a;
+                        in_s_b = in_b;
+                        _branch = (in_s_a >= in_s_b)  ? 1'b1 : 1'b0;
+                    end
+                    else
                         _branch = (in_a >= in_b)  ? 1'b1 : 1'b0;
-                    else begin
-                        in_u_a = in_a;
-                        in_u_b = in_b;
-                        _branch = (in_u_a >= in_u_b)  ? 1'b1 : 1'b0;
-                        end
                 end
                 BLT: begin
-                    if(is_signed)
+                    if(is_signed) begin
+                        in_s_a = in_a;
+                        in_s_b = in_b;
+                        _branch = (in_s_a < in_s_b)  ? 1'b1 : 1'b0;
+                    end
+                    else
                         _branch = (in_a < in_b)  ? 1'b1 : 1'b0;
-                    else begin
-                        in_u_a = in_a;
-                        in_u_b = in_b;
-                        _branch = (in_u_a < in_u_b)  ? 1'b1 : 1'b0;
-                        end
                 end
                 default: begin
                     _branch = 1'b0;

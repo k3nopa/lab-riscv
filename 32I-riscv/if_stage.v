@@ -13,7 +13,7 @@ module if_stage (
     wire [31:0] current_pc;
     
     multiplexer pc_mux(
-        .in1(pc), .in2(branch_addr), .in3(jump_addr), .select(pc_src), .jump(),
+        .in1(pc), .in2(branch_addr), .in3(jump_addr), .select(pc_src), .jump(jump),
         .out(current_pc)
     );
 
