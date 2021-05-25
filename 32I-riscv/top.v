@@ -58,7 +58,7 @@ module top (
     EX_MEM_MEM_READ, EX_MEM_MEM_WRITE, EX_MEM_REG_WRITE, EX_MEM_SIGNED,
     MEM_WB_REG_WRITE;
 
-    reg [1:0] ID_EX_MEM_TO_REG, ID_EX_MEM_SIZE, EX_MEM_MEM_TO_REG, EX_MEM_MEM_SIZE, MEM_WB_MEM_TO_REG;
+    reg [1:0] ID_EX_MEM_TO_REG, ID_EX_MEM_SIZE, ID_EX_JUMP, EX_MEM_MEM_TO_REG, EX_MEM_MEM_SIZE, MEM_WB_MEM_TO_REG;
     reg [3:0] ID_EX_ALU_OP;
 
     // Forwarding & Hazard Detection & Stall
@@ -73,7 +73,7 @@ module top (
     );
 
     if_stage if_phase(
-        .reset(rst), .pc(pc), .branch_addr(ID_EX_BRANCH_ADDR), .pc_src(pc_src),
+        .reset(rst), .pc(pc), .branch_addr(ID_EX_BRANCH_ADDR), .jump_addr(alu_result), .pc_src(pc_src), .jump(ID_EX_JUMP),
         .pc4(pc_in), .inst_addr(IAD)
     );
 
@@ -153,7 +153,7 @@ module top (
         /*
          * Pipeline Flushing
          */
-        if(pc_src) begin
+        if(pc_src || ID_EX_JUMP) begin
             ID_EX_PC <= 32'h0;
             ID_EX_PC4 <= 32'h0;
             ID_EX_INST <= 32'h0;
@@ -172,6 +172,7 @@ module top (
 
             ID_EX_MEM_TO_REG <= 2'b0;
             ID_EX_MEM_SIZE <= 2'bx;
+            ID_EX_JUMP <= 2'bx;
 
             ID_EX_ALU_OP <= 4'bx;
 
@@ -195,6 +196,7 @@ module top (
             ID_EX_ALU_OP <= alu_op;
             ID_EX_MEM_SIZE <= mem_size;
             ID_EX_SIGNED <= is_signed;
+            ID_EX_JUMP <= jump;
         end
     end
 

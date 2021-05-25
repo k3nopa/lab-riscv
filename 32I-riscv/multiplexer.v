@@ -1,7 +1,9 @@
 module multiplexer (
     input [31:0] in1,
     input [31:0] in2,
+    input [31:0] in3,
     input select,
+    input [1:0] jump,
 
     output [31:0] out
 );
@@ -17,6 +19,6 @@ module multiplexer (
         end
     endfunction
     
-    assign out = mux(in1, in2, select);
+    assign out = (jump !== 2'bx) ? in3 : mux(in1, in2, select);
 
 endmodule

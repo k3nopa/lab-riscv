@@ -187,7 +187,7 @@ module id_control(
                     reg_write = 1'b0;
                     alu_src_a = 1'b0;
                     alu_src_b = 1'b1;
-                    mem_to_reg = 2'd2;
+                    mem_to_reg = 2'd0;
                     jump = 2'd3;
                 end
                 JALR: begin
@@ -196,7 +196,7 @@ module id_control(
                     reg_write = 1'b0;
                     alu_src_a = 1'b0;
                     alu_src_b = 1'b1;
-                    mem_to_reg = 2'd2;
+                    mem_to_reg = 2'd0;
                     jump = 2'd3;
                 end
                 default: ;
