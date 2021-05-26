@@ -6,7 +6,8 @@ module id_control(
     output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
     output is_signed,
     output [1:0] inst_size,
-    output [3:0] alu_op
+    output [3:0] alu_op,
+    output [4:0] shift_amount
 );
     // Instructions' Type
     localparam [6:0]
@@ -20,6 +21,8 @@ module id_control(
     JAL = 7'b1101111,
     JALR = 7'b1100111;
 
+
+    
     localparam [3:0]
     ALU_ADD = 4'd0,
     ALU_SUB = 4'd1,
@@ -27,14 +30,15 @@ module id_control(
     ALU_AND = 4'd3,
     ALU_OR = 4'd4,
     ALU_XOR = 4'd5,
-    ALU_SHL = 4'd6,
-    ALU_SHR = 4'd7,
-    ALU_SLT = 4'd8,
-    ALU_LUI = 4'd9,
-    ALU_BEQ = 4'd10,
-    ALU_BNE = 4'd11,
-    ALU_BGE = 4'd12,
-    ALU_BLT = 4'd13;
+    ALU_SLL = 4'd6,
+    ALU_SRL = 4'd7,
+    ALU_SRA = 4'd8,
+    ALU_SLT = 4'd9,
+    ALU_LUI = 4'd10,
+    ALU_BEQ = 4'd11,
+    ALU_BNE = 4'd12,
+    ALU_BGE = 4'd13,
+    ALU_BLT = 4'd14;
 
     localparam [1:0]
     WORD = 2'b00,
@@ -210,8 +214,9 @@ module id_control(
     (ori || or_i)                           ? ALU_OR  :
     (xori || xor_i)                         ? ALU_XOR :
     (slti || slt || sltiu || sltu)          ? ALU_SLT :
-    (sll || slli)                           ? ALU_SHL :
-    (srl || srli || sra || srai)            ? ALU_SHR :
+    (sll || slli)                           ? ALU_SLL :
+    (srl || srli)                           ? ALU_SRL :
+    (sra || srai)                           ? ALU_SRA :
     (beq)                                   ? ALU_BEQ :
     (bne)                                   ? ALU_BNE :
     (bge || bgeu)                           ? ALU_BGE :
@@ -223,5 +228,7 @@ module id_control(
     (lh || lhu || sh) ? HALF : WORD;
 
     assign is_signed = (lbu || lhu || sltu || sltiu || bltu || bgeu) ? 1'b0 : 1'b1;
+    
+    assign shift_amount = (sll || slli || srl || srli || sra || srai) ? inst[24:20] : 5'bx;
 
 endmodule
