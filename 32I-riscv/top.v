@@ -16,6 +16,11 @@
 `include "rf32x32.v"
 `include "DW_ram_2r_w_s_dff.v"
 
+/*
+ *  WORD = 2'b00,
+ *  HALF = 2'b01,
+ *  BYTE = 2'b10;
+ */
 module top (
     input clk,
     input rst,
