@@ -234,51 +234,77 @@ module top (
      */
     always @(posedge clk) begin
         if (is_hazard1 && is_hazard2) begin
-            case(hazard_reg2)
-                1 : begin
-                    // forward from ex stage (rs1)
-                    ID_EX_RD1 <= EX_MEM_ALU;
-                end
-                2 : begin
-                    // forward from ex stage (rs2)
-                    ID_EX_RD2 <= EX_MEM_ALU;
-                end
-                3 : begin
-                    // forward from mem stage (rs1)
-                    // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                    ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
-                end
-                4 : begin
-                    // forward from mem stage (rs2) 
-                    // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                    ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+            // same target/src register can cause overwrite
+            // make sure to flow from first hazard's register because it is the latest result
+            if (hazard_reg1 === 3'd1 && hazard_reg2 === 3'd3) begin
+                ID_EX_RD1 <= alu_result;
+                ID_EX_RD2 <= reg_read_data2;
+            end
+            else if (hazard_reg1 === 3'd3 && hazard_reg2 === 3'd1) begin
+                ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+                ID_EX_RD2 <= reg_read_data2;
+            end
+            // same target/src register can cause overwrite
+            // make sure to flow from first hazard's register because it is the latest result
+            else if (hazard_reg1 === 3'd2 && hazard_reg2 === 3'd4) begin
+                ID_EX_RD1 <= reg_read_data1;
+                ID_EX_RD2 <= alu_result;
+            end
+            else if (hazard_reg1 === 3'd4 && hazard_reg2 === 3'd2) begin
+                ID_EX_RD1 <= reg_read_data1;
+                ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+            end
 
-                end
-                default : ;
-            endcase
+            else begin
+                // need to handle only either one register cause both hazards will fill each other
+                case(hazard_reg2)
+                    1 : begin
+                        // forward from ex stage (rs1)
+                        ID_EX_RD1 <= EX_MEM_ALU;
 
-            case(hazard_reg1)
-                1 : begin
-                    // forward from ex stage (rs1)
-                    ID_EX_RD1 <= alu_result;
-                end
-                2 : begin
-                    // forward from ex stage (rs2)
-                    ID_EX_RD2 <= alu_result;
-                end
-                3 : begin
-                    // forward from mem stage (rs1)
-                    ID_EX_RD1 <= alu_result;
-                end
-                4 : begin
-                    // forward from mem stage (rs2)
-                    ID_EX_RD2 <= alu_result;
-                end
-                default : ;
-            endcase
+                    end
+                    2 : begin
+                        // forward from ex stage (rs2)
+                        ID_EX_RD2 <= EX_MEM_ALU;
+                    end
+                    3 : begin
+                        // forward from mem stage (rs1)
+                        // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
+                        ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+                    end
+                    4 : begin
+                        // forward from mem stage (rs2) 
+                        // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
+                        ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+
+                    end
+                    default : ;
+                endcase
+
+                case(hazard_reg1)
+                    1 : begin
+                        // forward from ex stage (rs1)
+                        ID_EX_RD1 <= alu_result;
+                    end
+                    2 : begin
+                        // forward from ex stage (rs2)
+                        ID_EX_RD2 <= alu_result;
+                    end
+                    3 : begin
+                        // forward from mem stage (rs1)
+                        ID_EX_RD1 <= alu_result;
+                    end
+                    4 : begin
+                        // forward from mem stage (rs2)
+                        ID_EX_RD2 <= alu_result;
+                    end
+                    default : ;
+                endcase
+            end
 
         end
-
+        
+        // handle when either hazard is detected
         else if (is_hazard1 || is_hazard2) begin
             if (is_hazard1) begin
                 case(hazard_reg1)
