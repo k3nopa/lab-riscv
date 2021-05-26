@@ -14,35 +14,38 @@ module ex_alu(
     AND = 4'd3,
     OR = 4'd4,
     XOR = 4'd5,
-    SHL = 4'd6,
-    SHR = 4'd7,
-    SLT = 4'd8,
-    LUI = 4'd9,
-    BEQ = 4'd10,
-    BNE = 4'd11,
-    BGE = 4'd12,
-    BLT = 4'd13;
+    SLL = 4'd6,
+    SRL = 4'd7,
+    SRA = 4'd8,
+    SLT = 4'd9,
+    LUI = 4'd10,
+    BEQ = 4'd11,
+    BNE = 4'd12,
+    BGE = 4'd13,
+    BLT = 4'd14;
 
 
-    function [31:0] arithematic;
-        input [3:0] in_op;
-        input [31:0] in_a, in_b;
+    function [31:0] arithematic(
+        input [3:0] in_op,
+        input [31:0] in_a, in_b
+    );
+        reg signed [31:0] s_in_a;
 
         begin
+            s_in_a = in_a;
             case (in_op)
-                LUI: arithematic = 32'h0 + in_b;
+                LUI: arithematic = in_b;
                 ADD: arithematic = in_a + in_b;
                 SUB: arithematic = in_a - in_b;
                 MUL: arithematic = in_a * in_b;
                 AND: arithematic = in_a & in_b;
                 OR : arithematic = in_a | in_b;
                 XOR: arithematic = in_a ^ in_b;
-                SHL: arithematic = in_a << in_b;
-                SHR: arithematic = in_a >> in_b;
+                SLL: arithematic = in_a << in_b;
+                SRL: arithematic = in_a >> in_b;
+                SRA: arithematic = s_in_a >>> in_b;
                 SLT: arithematic = (in_a < in_b)  ? 1'b1 : 1'b0;
-                default: begin
-                    arithematic = in_a + in_b;
-                end
+                default: arithematic = in_a + in_b;
             endcase
         end
     endfunction
