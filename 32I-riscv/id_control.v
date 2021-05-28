@@ -140,6 +140,15 @@ module id_control(
                     mem_to_reg = 2'd2;
                     jump = 2'bx;
                 end
+                AUIPC: begin
+                    mem_read = 1'b0;
+                    mem_write = 1'b0;
+                    reg_write = 1'b0;
+                    alu_src_a = 1'b0;
+                    alu_src_b = 1'b1;
+                    mem_to_reg = 2'd2;
+                    jump = 2'bx;
+                end
                 IMM: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
@@ -198,7 +207,7 @@ module id_control(
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b0;
+                    alu_src_a = 1'b1;
                     alu_src_b = 1'b1;
                     mem_to_reg = 2'd0;
                     jump = 2'd3;
@@ -209,19 +218,19 @@ module id_control(
     end
 
     assign alu_op =
-    (add || addi || auipc || load || store) ? ALU_ADD :
-    (andi || and_i)                         ? ALU_AND :
-    (ori || or_i)                           ? ALU_OR  :
-    (xori || xor_i)                         ? ALU_XOR :
-    (slti || slt || sltiu || sltu)          ? ALU_SLT :
-    (sll || slli)                           ? ALU_SLL :
-    (srl || srli)                           ? ALU_SRL :
-    (sra || srai)                           ? ALU_SRA :
-    (beq)                                   ? ALU_BEQ :
-    (bne)                                   ? ALU_BNE :
-    (bge || bgeu)                           ? ALU_BGE :
-    (blt || bltu)                           ? ALU_BLT :
-    (lui)                                   ? ALU_LUI : ALU_SUB;
+    (add || addi || auipc || load || store || jal || jalr) ? ALU_ADD :
+    (andi || and_i)                                        ? ALU_AND :
+    (ori || or_i)                                          ? ALU_OR  :
+    (xori || xor_i)                                        ? ALU_XOR :
+    (slti || slt || sltiu || sltu)                         ? ALU_SLT :
+    (sll || slli)                                          ? ALU_SLL :
+    (srl || srli)                                          ? ALU_SRL :
+    (sra || srai)                                          ? ALU_SRA :
+    (beq)                                                  ? ALU_BEQ :
+    (bne)                                                  ? ALU_BNE :
+    (bge || bgeu)                                          ? ALU_BGE :
+    (blt || bltu)                                          ? ALU_BLT :
+    (lui)                                                  ? ALU_LUI : ALU_SUB;
 
     assign inst_size =
     (lb || lbu || sb) ? BYTE :
