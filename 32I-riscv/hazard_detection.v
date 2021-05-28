@@ -33,15 +33,16 @@ module hazard_detection(
             if ( _current[6:0] !== LUI && _current[6:0] !== AUIPC && _current[6:0] !== JAL && _before[6:0] !== STORE && _before[6:0] !== BRANCH ) begin
 
                 // compare current inst at id to inst at mem(if inst exist)
+                // Todo maybe check if rd is x0 only rather than checking both
                 if (next) begin
-                    if (_before !== 32'hx &&  _before[11:7] === _current[19:15])
+                    if (_before !== 32'hx && _before[11:7] === _current[19:15] && _before[11:7] !== 5'h0 && _current[19:15] !== 5'h0)
                         hazard_check = {1'b1, FROM_MEM_RS1, 1'b0};
-                    else if (_before !== 32'hx && _before[11:7] === _current[24:20])
+                    else if (_before !== 32'hx && _before[11:7] === _current[24:20] && _before[11:7] !== 5'h0 && _current[24:20] !== 5'h0)
                         hazard_check = {1'b1, FROM_MEM_RS2, 1'b0};
                 end
                 // compare current inst at id to inst at ex(if inst exist)
                 else begin
-                    if (_before !== 32'hx && _before[11:7] === _current[19:15]) begin
+                    if (_before !== 32'hx && _before[11:7] === _current[19:15] && _before[11:7] !== 5'h0 && _current[19:15] !== 5'h0) begin
                         // if load was instruction before, stall current stage
                         if (_before[6:0] === LOAD) begin
                             hazard_check = {1'b1, FROM_MEM_RS1, 1'b1};
@@ -50,7 +51,7 @@ module hazard_detection(
                             hazard_check = {1'b1, FROM_EX_RS1, 1'b0};
                         end
                     end
-                    else if (_before !== 32'hx && _before[11:7] === _current[24:20]) begin
+                    else if (_before !== 32'hx && _before[11:7] === _current[24:20] && _before[11:7] !== 5'h0 && _current[24:20] !== 5'h0) begin
                         // if load was instruction before, stall current stage
                         if (_before[6:0] === LOAD) begin
                             hazard_check = {1'b1, FROM_MEM_RS2, 1'b1};
