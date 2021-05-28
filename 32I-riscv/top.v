@@ -78,7 +78,7 @@ module top (
     );
 
     if_stage if_phase(
-        .reset(rst), .pc(pc), .branch_addr(ID_EX_BRANCH_ADDR), .jump_addr(alu_result), .pc_src(pc_src), .jump(ID_EX_JUMP),
+        .reset(rst), .pc(pc), .branch_addr(ID_EX_BRANCH_ADDR), .jump_addr(alu_result), .pc_src(pc_src), .jump(ID_EX_JUMP), .stall(stall1 || stall2),
         .pc4(pc_in), .inst_addr(IAD)
     );
 
@@ -126,29 +126,9 @@ module top (
      * IF/ID Pipeline
      */
     always @(posedge clk) begin
-
-        if (stall1 || stall2) begin
-            IF_ID_INST <= IF_ID_INST;
-            stalling <= 1;
-            hold_inst <= IDT;
-        end
-
-        else if (stalling) begin
-            IF_ID_INST <= hold_inst;
-            stalling <= 0;
-            hold_inst <= IDT;
-        end
-
-        else begin
-            if (hold_inst !== 32'hx) begin
-                hold_inst <= IDT;
-                IF_ID_INST <= hold_inst;
-            end
-            else
-                IF_ID_INST <= IDT;
-        end
-        IF_ID_PC <= pc;
+        IF_ID_PC <= IAD;
         IF_ID_PC4 <= pc_in;
+        IF_ID_INST <= IDT;
     end
 
     /*
@@ -158,7 +138,7 @@ module top (
         /*
          * Pipeline Flushing
          */
-        if(pc_src || ID_EX_JUMP) begin
+        if(pc_src || ID_EX_JUMP === 2'd3) begin
             ID_EX_PC <= 32'h0;
             ID_EX_PC4 <= 32'h0;
             ID_EX_INST <= 32'h0;
@@ -308,7 +288,7 @@ module top (
             end
 
         end
-        
+
         // handle when either hazard is detected
         else if (is_hazard1 || is_hazard2) begin
             if (is_hazard1) begin
