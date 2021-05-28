@@ -18,12 +18,8 @@ module if_stage (
         .out(current_pc)
     );
 
-    if_pc_adder pc_adder(.reset(reset), .pc(current_pc), .pc4(new_pc));
+    if_pc_adder pc_adder(.reset(reset), .stall(stall), .jump(jump), .pc(current_pc), .pc4(pc4));
         
-        
-    // need to minus 4 because, stall is detected during id stage.
-    // at this stage, pc is already at next instruction
-    assign pc4 = (stall !== 1'bx && stall === 1'b1) ? (pc - 32'd4) : new_pc;
-    assign inst_addr = (stall !== 1'bx && stall === 1'b1) ? pc : current_pc;
+    assign inst_addr = current_pc;
 
 endmodule
