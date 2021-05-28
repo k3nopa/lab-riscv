@@ -29,10 +29,11 @@ module ex_alu(
         input [3:0] in_op,
         input [31:0] in_a, in_b
     );
-        reg signed [31:0] s_in_a;
+        reg signed [31:0] s_in_a, s_in_b;
 
         begin
             s_in_a = in_a;
+            s_in_b = in_b;
             case (in_op)
                 LUI: arithematic = in_b;
                 ADD: arithematic = in_a + in_b;
@@ -44,7 +45,12 @@ module ex_alu(
                 SLL: arithematic = in_a << in_b;
                 SRL: arithematic = in_a >> in_b;
                 SRA: arithematic = s_in_a >>> in_b;
-                SLT: arithematic = (in_a < in_b)  ? 1'b1 : 1'b0;
+                SLT: begin
+                    if (is_signed) 
+                        arithematic = (s_in_a < s_in_b)  ? 1'b1 : 1'b0; 
+                    else
+                        arithematic = (in_a < in_b)  ? 1'b1 : 1'b0;
+                end
                 default: arithematic = in_a + in_b;
             endcase
         end
