@@ -35,8 +35,14 @@ def usage():
         p2
       c:
         hello
+        napier
+        pi
+        prime
+        sort
       MiBench:
         bitcnts
+        dijkstra
+        stringsearch
 
     Example: ./simulate.py -t load -d deps/
     """
@@ -124,6 +130,10 @@ def simulate(sim_type, dep_path):
         new_copy_path = os.path.join(dev_path, "test_pack/c/hello/")
     elif sim_type == "bitcnts":
         new_copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/test/")
+    elif sim_type == "dijkstra":
+        new_copy_path = os.path.join(dev_path, "test_pack/MiBench/dijkstra/test/")
+    elif sim_type == "stringsearch":
+        new_copy_path = os.path.join(dev_path, "test_pack/MiBench/stringsearch/test/")
     else:  # load
         new_copy_path = os.path.join(dev_path, "test_pack/asm/load/")
 
