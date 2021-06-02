@@ -46,8 +46,8 @@ module ex_alu(
                 SRL: arithematic = in_a >> in_b;
                 SRA: arithematic = s_in_a >>> in_b;
                 SLT: begin
-                    if (is_signed) 
-                        arithematic = (s_in_a < s_in_b)  ? 1'b1 : 1'b0; 
+                    if (is_signed)
+                        arithematic = (s_in_a < s_in_b)  ? 1'b1 : 1'b0;
                     else
                         arithematic = (in_a < in_b)  ? 1'b1 : 1'b0;
                 end
@@ -56,37 +56,33 @@ module ex_alu(
         end
     endfunction
 
-    function _branch;
-        input [3:0] in_op;
-        input [31:0] in_a, in_b;
+    function _branch(
+        input [3:0] in_op,
+        input [31:0] in_a, in_b
+    );
 
-        reg signed in_s_a, in_s_b;
+        reg signed [31:0] in_s_a, in_s_b;
 
         begin
+            in_s_a = in_a;
+            in_s_b = in_b;
             case(in_op)
                 BEQ: _branch = (in_a == in_b) ? 1'b1 : 1'b0;
                 BNE: _branch = (in_a != in_b) ? 1'b1 : 1'b0;
                 BGE: begin
                     if(is_signed) begin
-                        in_s_a = in_a;
-                        in_s_b = in_b;
-                        _branch = (in_s_a >= in_s_b)  ? 1'b1 : 1'b0;
+                        _branch = (in_s_a >= in_s_b) ? 1'b1 : 1'b0;
                     end
                     else
-                        _branch = (in_a >= in_b)  ? 1'b1 : 1'b0;
+                        _branch = (in_a >= in_b) ? 1'b1 : 1'b0;
                 end
                 BLT: begin
-                    if(is_signed) begin
-                        in_s_a = in_a;
-                        in_s_b = in_b;
-                        _branch = (in_s_a < in_s_b)  ? 1'b1 : 1'b0;
-                    end
+                    if(is_signed)
+                        _branch = (in_s_a < in_s_b) ? 1'b1 : 1'b0;
                     else
-                        _branch = (in_a < in_b)  ? 1'b1 : 1'b0;
+                        _branch = (in_a < in_b) ? 1'b1 : 1'b0;
                 end
-                default: begin
-                    _branch = 1'b0;
-                end
+                default: _branch = 1'b0;
             endcase
         end
     endfunction
