@@ -115,18 +115,6 @@ module top_test;
 
      end // initial begin
 
-   //*** description for wave form ***//
-   initial begin
-      //$monitor($stime," PC=%h INST=%h", IAD, IDT);
-      //ここから2行はIcarus Verilog用(手元で動かすときに使ってください)
-	  //$dumpfile("top_test.vcd");
-      //$dumpvars(0, u_top_1);
-	  //ここから2行はNC-Verilog用(woodblockで動かすときに使ってください)
-      //$shm_open("waves.shm");
-      //$shm_probe("AS");
-   end
-
-
    //*** tasks ***//
 
    task fetch_task1;
