@@ -11,16 +11,10 @@
 `include "id_sign_extend.v"
 `include "ex_alu.v"
 `include "reg32.v"
-`include "multiplexer.v"
 `include "hazard_detection.v"
 `include "rf32x32.v"
 `include "DW_ram_2r_w_s_dff.v"
 
-/*
- *  WORD = 2'b00,
- *  HALF = 2'b01,
- *  BYTE = 2'b10;
- */
 module top (
     input clk,
     input rst,
@@ -52,11 +46,10 @@ module top (
     wire [31:0] branch_addr, mem_read_data, reg_read_data1, reg_read_data2, imm, alu_result;
 
     // Pipelines
-    reg [31:0] IF_ID_PC, IF_ID_PC4, ID_EX_PC, ID_EX_PC4, EX_MEM_PC4, MEM_WB_PC4;
-    reg [31:0] IF_ID_INST, ID_EX_INST, EX_MEM_INST, MEM_WB_INST;
-    reg [31:0] EX_MEM_ALU, MEM_WB_ALU;
-    reg [31:0] ID_EX_RD2, EX_MEM_RD2;
-    reg [31:0] ID_EX_BRANCH_ADDR, ID_EX_RD1, ID_EX_SEXT, MEM_WB_MDATA;
+    reg [31:0] IF_ID_PC, IF_ID_PC4, IF_ID_INST,
+    ID_EX_PC, ID_EX_PC4, ID_EX_INST, ID_EX_BRANCH_ADDR, ID_EX_RD1, ID_EX_RD2, ID_EX_SEXT,
+    EX_MEM_PC4, EX_MEM_INST, EX_MEM_ALU, EX_MEM_RD2,
+    MEM_WB_PC4, MEM_WB_INST,  MEM_WB_ALU, MEM_WB_MDATA;
 
     // Controls Pipelines
     reg ID_EX_MEM_READ, ID_EX_MEM_WRITE, ID_EX_ALU_SRC_A, ID_EX_ALU_SRC_B, ID_EX_REG_WRITE, ID_EX_SIGNED,
@@ -69,8 +62,6 @@ module top (
     // Forwarding & Hazard Detection & Stall
     wire is_hazard1, stall1, is_hazard2, stall2;
     wire [2:0] hazard_reg1, hazard_reg2;
-    reg stalling;
-    reg [31:0] hold_inst;
 
     reg32 PC(
         .reset(rst), .clk(clk), .d(pc_in),
@@ -89,7 +80,6 @@ module top (
         .branch_addr(branch_addr), .sign_extend(imm)
     );
 
-    /* ----- Register File ----- */
     rf32x32 regfile(
         .clk(clk), .reset(rst), .wr_n(MEM_WB_REG_WRITE),
         .rd1_addr(IF_ID_INST[19:15]), .rd2_addr(IF_ID_INST[24:20]), .wr_addr(MEM_WB_INST[11:7]),
@@ -108,7 +98,7 @@ module top (
     );
 
     wb_stage wb_phase(
-        .pc4(MEM_WB_PC4), .mem_data(MEM_WB_MDATA), .alu_result(MEM_WB_ALU), .mem_to_reg(MEM_WB_MEM_TO_REG),
+        .pc4(MEM_WB_PC4), .mem_data(MEM_WB_MDATA), .alu_result(MEM_WB_ALU), .rd(MEM_WB_INST[11:7]), .mem_to_reg(MEM_WB_MEM_TO_REG),
         .write_data(reg_data_in)
     );
 
@@ -138,7 +128,7 @@ module top (
         /*
          * Pipeline Flushing
          */
-        if(pc_src || ID_EX_JUMP === 2'd3) begin
+        if(stall1 || stall2 || pc_src || ID_EX_JUMP === 2'd2) begin
             ID_EX_PC <= 32'h0;
             ID_EX_PC4 <= 32'h0;
             ID_EX_INST <= 32'h0;
@@ -155,15 +145,11 @@ module top (
             ID_EX_REG_WRITE <= 1'b1;
             ID_EX_SIGNED <= 1'bx;
 
-            ID_EX_MEM_TO_REG <= 2'b0;
-            ID_EX_MEM_SIZE <= 2'bx;
+            ID_EX_MEM_TO_REG <= 2'bxx;
+            ID_EX_MEM_SIZE <= 2'bxx;
             ID_EX_JUMP <= 2'bx;
 
             ID_EX_ALU_OP <= 4'bx;
-
-            // Forwarding & Hazard Detection & Stall
-            stalling <= 1'bx;
-            hold_inst <= 32'hx;
         end
         else begin
             ID_EX_PC <= IF_ID_PC;
@@ -255,12 +241,12 @@ module top (
                     3 : begin
                         // forward from mem stage (rs1)
                         // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                        ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+                        ID_EX_RD1 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
                     end
                     4 : begin
                         // forward from mem stage (rs2) 
                         // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                        ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : (EX_MEM_ALU !== 32'hx) ? EX_MEM_ALU : alu_result;
+                        ID_EX_RD2 <= (mem_read_data !== 32'hx) ? mem_read_data : EX_MEM_ALU;
 
                     end
                     default : ;

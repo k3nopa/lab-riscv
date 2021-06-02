@@ -2,6 +2,7 @@ module wb_stage (
   input [31:0] pc4,
   input [31:0] mem_data,
   input [31:0] alu_result,
+  input [4:0] rd,
 
   input [1:0] mem_to_reg,
 
@@ -24,6 +25,6 @@ module wb_stage (
     endcase
   end
 
-  assign write_data = r_write_data;
+  assign write_data = (rd === 5'b00000) ? 32'd0 : r_write_data;
   
 endmodule

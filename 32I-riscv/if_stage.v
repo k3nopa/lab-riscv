@@ -1,5 +1,5 @@
 module if_stage (
-    input reset,    // active at low
+    input reset, // active at low
     input pc_src,
     input stall,
     input [1:0] jump,
@@ -11,15 +11,25 @@ module if_stage (
     output [31:0] inst_addr
 );
 
-    wire [31:0] current_pc, new_pc;
-    
-    multiplexer pc_mux(
-        .in1(pc), .in2(branch_addr), .in3(jump_addr), .select(pc_src), .jump(jump),
-        .out(current_pc)
-    );
+    wire [31:0] pc_in, current_pc, new_pc;
 
-    if_pc_adder pc_adder(.reset(reset), .stall(stall), .jump(jump), .pc(current_pc), .pc4(pc4));
-        
+    function [31:0] mux;
+        input [31:0] _in1, _in2, _select;
+        begin
+            case (_select)
+                0 : mux = _in1;
+                1 : mux = _in2;
+                default: ;
+            endcase
+        end
+    endfunction
+
+    if_pc_adder pc_adder(.reset(reset), .pc(current_pc), .pc4(new_pc));
+
+    assign pc_in = (jump !== 2'bx) ? jump_addr : mux(pc, branch_addr, pc_src);
+    assign current_pc = (stall !== 1'bx & stall) ? (pc_in - 4) : pc_in; 
+    
     assign inst_addr = current_pc;
+    assign pc4 = new_pc;
 
 endmodule

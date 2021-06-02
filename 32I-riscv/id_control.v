@@ -3,7 +3,7 @@ module id_control(
     input [31:0] inst,
 
     output reg mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
-    output reg [1:0] mem_to_reg, jump, // 11(3) -> jump
+    output reg [1:0] mem_to_reg, jump, // 10(2) -> jump
     output is_signed,
     output [1:0] inst_size,
     output [3:0] alu_op,
@@ -21,8 +21,7 @@ module id_control(
     JAL = 7'b1101111,
     JALR = 7'b1100111;
 
-
-    
+    // Alu Operations
     localparam [3:0]
     ALU_ADD = 4'd0,
     ALU_SUB = 4'd1,
@@ -40,6 +39,7 @@ module id_control(
     ALU_BGE = 4'd13,
     ALU_BLT = 4'd14;
 
+    // Data Memory Size
     localparam [1:0]
     WORD = 2'b00,
     HALF = 2'b01,
@@ -48,73 +48,59 @@ module id_control(
     // Instructions' Format in Parts
     wire [6:0] op_part = inst[6:0];
     wire [2:0] f3_part = inst[14:12];
-    wire [6:0] f7_part = inst[31:25];
 
-    // Instructions Decoder
-    wire lui   = (7'b0110111 == op_part);
-    wire auipc = (7'b0010111 == op_part);
+    // U-type Instructions
+    wire lui   = (LUI == op_part);
+    wire auipc = (AUIPC == op_part);
+
+    // Jump-Type Instructions
+    wire jal     = (JAL == op_part);
+    wire jalr    = (JALR == op_part);
 
     // Load Instructions
-    wire [6:0] load_op = 7'b0000011;
-
-    wire lb      = (load_op == op_part) && (3'b000 == f3_part);
-    wire lh      = (load_op == op_part) && (3'b001 == f3_part);
-    wire lw      = (load_op == op_part) && (3'b010 == f3_part);
-    wire lbu     = (load_op == op_part) && (3'b100 == f3_part);
-    wire lhu     = (load_op == op_part) && (3'b101 == f3_part);
+    wire lb      = (LOAD == op_part) && (3'b000 == f3_part);
+    wire lh      = (LOAD == op_part) && (3'b001 == f3_part);
+    wire lw      = (LOAD == op_part) && (3'b010 == f3_part);
+    wire lbu     = (LOAD == op_part) && (3'b100 == f3_part);
+    wire lhu     = (LOAD == op_part) && (3'b101 == f3_part);
     wire load    = (lb || lh || lw || lbu || lhu);
 
     // Store Instructions
-    wire [6:0] store_op = 7'b0100011;
-
-    wire sb       = (store_op == op_part) && (3'b000 == f3_part);
-    wire sh       = (store_op == op_part) && (3'b001 == f3_part);
-    wire sw       = (store_op == op_part) && (3'b010 == f3_part);
+    wire sb       = (STORE == op_part) && (3'b000 == f3_part);
+    wire sh       = (STORE == op_part) && (3'b001 == f3_part);
+    wire sw       = (STORE == op_part) && (3'b010 == f3_part);
     wire store    = (sb || sh || sw);
 
     // I-Type Instructions
-    wire [6:0] imm_op = 7'b0010011;
-
-    wire addi   = (imm_op == op_part) && (3'b000 == f3_part);
-    wire slti   = (imm_op == op_part) && (3'b010 == f3_part);
-    wire sltiu  = (imm_op == op_part) && (3'b011 == f3_part);
-    wire xori   = (imm_op == op_part) && (3'b100 == f3_part);
-    wire ori    = (imm_op == op_part) && (3'b110 == f3_part);
-    wire andi   = (imm_op == op_part) && (3'b111 == f3_part);
-    wire slli   = (imm_op == op_part) && (3'b001 == f3_part);
-    wire srli   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
-    wire srai   = (imm_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+    wire addi   = (IMM == op_part) && (3'b000 == f3_part);
+    wire slti   = (IMM == op_part) && (3'b010 == f3_part);
+    wire sltiu  = (IMM == op_part) && (3'b011 == f3_part);
+    wire xori   = (IMM == op_part) && (3'b100 == f3_part);
+    wire ori    = (IMM == op_part) && (3'b110 == f3_part);
+    wire andi   = (IMM == op_part) && (3'b111 == f3_part);
+    wire slli   = (IMM == op_part) && (3'b001 == f3_part);
+    wire srli   = (IMM == op_part) && (3'b101 == f3_part) && (inst[30] == 1'b0);
+    wire srai   = (IMM == op_part) && (3'b101 == f3_part) && (inst[30] == 1'b1);
 
     // R-Type Instructions
-    wire [6:0] r_op = 7'b0110011;
-
-    wire add    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0000000 == f7_part);
-    wire sub    = (r_op == op_part) && (3'b000 == f3_part) && (7'b0100000 == f7_part);
-    wire slt    = (r_op == op_part) && (3'b010 == f3_part);
-    wire sltu   = (r_op == op_part) && (3'b011 == f3_part);
-    wire xor_i  = (r_op == op_part) && (3'b100 == f3_part);
-    wire or_i   = (r_op == op_part) && (3'b110 == f3_part);
-    wire and_i  = (r_op == op_part) && (3'b111 == f3_part);
-    wire sll    = (r_op == op_part) && (3'b001 == f3_part);
-    wire srl    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0000000 == f7_part);
-    wire sra    = (r_op == op_part) && (3'b101 == f3_part) && (7'b0100000 == f7_part);
+    wire add    = (R_TYPE == op_part) && (3'b000 == f3_part) && (inst[30] == 1'b0);
+    wire sub    = (R_TYPE == op_part) && (3'b000 == f3_part) && (inst[30] == 1'b1);
+    wire slt    = (R_TYPE == op_part) && (3'b010 == f3_part);
+    wire sltu   = (R_TYPE == op_part) && (3'b011 == f3_part);
+    wire xor_i  = (R_TYPE == op_part) && (3'b100 == f3_part);
+    wire or_i   = (R_TYPE == op_part) && (3'b110 == f3_part);
+    wire and_i  = (R_TYPE == op_part) && (3'b111 == f3_part);
+    wire sll    = (R_TYPE == op_part) && (3'b001 == f3_part);
+    wire srl    = (R_TYPE == op_part) && (3'b101 == f3_part) && (inst[30] == 1'b0);
+    wire sra    = (R_TYPE == op_part) && (3'b101 == f3_part) && (inst[30] == 1'b1);
 
     // Branch-Type Instructions
-    wire [6:0] b_op = 7'b1100011;
-
-    wire beq     = (b_op == op_part) && (3'b000 == f3_part);
-    wire bne     = (b_op == op_part) && (3'b001 == f3_part);
-    wire blt     = (b_op == op_part) && (3'b100 == f3_part);
-    wire bge     = (b_op == op_part) && (3'b101 == f3_part);
-    wire bltu    = (b_op == op_part) && (3'b110 == f3_part);
-    wire bgeu    = (b_op == op_part) && (3'b111 == f3_part);
-
-    // Jump-Type Instructions
-    wire [6:0] j_op = 7'b1101111;
-    wire [6:0] jr_op = 7'b1100111;
-
-    wire jal     = (j_op == op_part);
-    wire jalr    = (jr_op == op_part);
+    wire beq     = (BRANCH == op_part) && (3'b000 == f3_part);
+    wire bne     = (BRANCH == op_part) && (3'b001 == f3_part);
+    wire blt     = (BRANCH == op_part) && (3'b100 == f3_part);
+    wire bge     = (BRANCH == op_part) && (3'b101 == f3_part);
+    wire bltu    = (BRANCH == op_part) && (3'b110 == f3_part);
+    wire bgeu    = (BRANCH == op_part) && (3'b111 == f3_part);
 
     // reg_write is active at low
     always @(*) begin
@@ -136,81 +122,81 @@ module id_control(
                     mem_write = 1'b0;
                     reg_write = 1'b0;
                     alu_src_a = 1'bx;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd2;
-                    jump = 2'bx;
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'd2; // alu
+                    jump = 2'bxx;
                 end
                 AUIPC: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b0;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd2;
-                    jump = 2'bx;
+                    alu_src_a = 1'b0; // pc
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'd2; // alu
+                    jump = 2'bxx;
                 end
                 IMM: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd2;
-                    jump = 2'bx;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'd2; // alu
+                    jump = 2'bxx;
                 end
                 LOAD: begin
                     mem_read = 1'b1;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd1;
-                    jump = 2'bx;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'd1; // mem data
+                    jump = 2'bxx;
                 end
                 STORE: begin
                     mem_read = 1'b0;
                     mem_write = 1'b1;
                     reg_write = 1'b1;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'bxx;
-                    jump = 2'bx;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'bxx; // none
+                    jump = 2'bxx;
                 end
                 R_TYPE: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b0;
-                    mem_to_reg = 2'd2;
-                    jump = 2'bx;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b0; // reg
+                    mem_to_reg = 2'd2; // alu
+                    jump = 2'bxx;
                 end
                 BRANCH: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b0;
-                    mem_to_reg = 2'dx;
-                    jump = 2'bx;
+                    reg_write = 1'b1;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b0; // reg
+                    mem_to_reg = 2'bxx; // none
+                    jump = 2'bxx;
                 end
                 JAL: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b0;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd0;
-                    jump = 2'd3;
+                    alu_src_a = 1'b0; // pc
+                    alu_src_b = 1'b1; // sext
+                    mem_to_reg = 2'd0; // pc4
+                    jump = 2'd2;
                 end
                 JALR: begin
                     mem_read = 1'b0;
                     mem_write = 1'b0;
                     reg_write = 1'b0;
-                    alu_src_a = 1'b1;
-                    alu_src_b = 1'b1;
-                    mem_to_reg = 2'd0;
-                    jump = 2'd3;
+                    alu_src_a = 1'b1; // reg
+                    alu_src_b = 1'b1; // reg
+                    mem_to_reg = 2'd0; // pc4
+                    jump = 2'd2;
                 end
                 default: ;
             endcase
@@ -237,7 +223,7 @@ module id_control(
     (lh || lhu || sh) ? HALF : WORD;
 
     assign is_signed = (lbu || lhu || sltu || sltiu || bltu || bgeu) ? 1'b0 : 1'b1;
-    
+
     assign shift_amount = (sll || slli || srl || srli || sra || srai) ? inst[24:20] : 5'bx;
 
 endmodule

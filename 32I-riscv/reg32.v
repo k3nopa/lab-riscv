@@ -8,7 +8,7 @@ module reg32 (
 
   always @(posedge clk or negedge reset) begin
     if (!reset)
-      q = 32'h0000_0000;
+      q = 32'h0001_0000;
     else 
       q = d;
   end 
