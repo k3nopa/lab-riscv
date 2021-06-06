@@ -40,7 +40,9 @@ def usage():
         prime
         sort
       MiBench:
-        bitcnts
+        bitcnts:test
+        bitcnts:small
+        bitcnts:large
         dijkstra
         stringsearch
 
@@ -128,8 +130,20 @@ def simulate(sim_type, dep_path):
         new_copy_path = os.path.join(dev_path, "test_pack/asm/p2/")
     elif sim_type == "hello":
         new_copy_path = os.path.join(dev_path, "test_pack/c/hello/")
-    elif sim_type == "bitcnts":
+    elif sim_type == "napier":
+        new_copy_path = os.path.join(dev_path, "test_pack/c/napier/test/")
+    elif sim_type == "pi":
+        new_copy_path = os.path.join(dev_path, "test_pack/c/pi/test/")
+    elif sim_type == "prime":
+        new_copy_path = os.path.join(dev_path, "test_pack/c/prime/test/")
+    elif sim_type == "sort":
+        new_copy_path = os.path.join(dev_path, "test_pack/c/sort/quick/test/")
+    elif sim_type == "bitcnts:test":
         new_copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/test/")
+    elif sim_type == "bitcnts:small":
+        new_copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/small/")
+    elif sim_type == "bitcnts:large":
+        new_copy_path = os.path.join(dev_path, "test_pack/MiBench/bitcnts/large/")
     elif sim_type == "dijkstra":
         new_copy_path = os.path.join(dev_path, "test_pack/MiBench/dijkstra/test/")
     elif sim_type == "stringsearch":
@@ -140,14 +154,14 @@ def simulate(sim_type, dep_path):
     log("info", "Preparing for makefile")
     cmd(["cp", f"{copy_path}/top_test.v", "./"])
     for file in os.listdir(new_copy_path):
-        cmd(["cp", new_copy_path + file, "./"])
+        cmd(["cp", "-r", new_copy_path + file, "./"])
 
     log("info", "Run makefile")
     cmd(["make"])
 
     dep_path = os.path.join(dev_path, dep_path)
     for file in os.listdir(dep_path):
-        cmd(["cp", dep_path + file, "./"])
+        cmd(["cp", "-r", dep_path + file, "./"])
 
     log("info", "Run Simulation")
     os.chdir(copy_path + "/simulation")
