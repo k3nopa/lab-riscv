@@ -13,6 +13,7 @@
 
 `include "stages/utils/reg32.v"
 `include "stages/utils/hazard_detection.v"
+`include "stages/utils/forwarding.v"
 `include "stages/utils/rf32x32.v"
 `include "stages/utils/DW_ram_2r_w_s_dff.v"
 
@@ -104,20 +105,17 @@ module top (
 
     ID_EX_PIPE id_ex(
         .clk(clk), .reset(rst),
-        .stall1(stall1), .stall2(stall2), .branch(pc_src), .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
-        .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
+        .stall1(stall1), .stall2(stall2), .branch(pc_src),
 
         .mem_read_in(mem_read), .mem_write_in(mem_write), .alu_src_a_in(alu_src_a), .alu_src_b_in(alu_src_b), .reg_write_in(reg_write), .sign_in(is_signed),
         .jump_in(jump), .mem_to_reg_in(mem_to_reg), .mem_size_in(inst_size),
         .alu_op_in(alu_op),
-        .pc_in(if_id_pc), .pc4_in(if_id_pc4), .inst_in(if_id_inst), .branch_addr_in(branch_addr), .rs1_in(rs1_data), .rs2_in(rs2_data), .sext_in(sext),
-
-        .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata),
+        .pc_in(if_id_pc), .pc4_in(if_id_pc4), .inst_in(if_id_inst), .branch_addr_in(branch_addr), .sext_in(sext),
 
         .mem_read(id_ex_mem_read), .mem_write(id_ex_mem_write), .alu_src_a(id_ex_alu_src_a), .alu_src_b(id_ex_alu_src_b), .reg_write(id_ex_reg_write), .sign(id_ex_sign),
         .jump(id_ex_jump), .mem_to_reg(id_ex_mem_to_reg), .mem_size(id_ex_mem_size),
         .alu_op(id_ex_alu_op),
-        .pc(id_ex_pc), .pc4(id_ex_pc4), .inst(id_ex_inst), .branch_addr(id_ex_branch_addr), .rs1(id_ex_rs1), .rs2(id_ex_rs2), .sext(id_ex_sext)
+        .pc(id_ex_pc), .pc4(id_ex_pc4), .inst(id_ex_inst), .branch_addr(id_ex_branch_addr), .sext(id_ex_sext)
     );
 
     ex_stage ex_phase(
@@ -165,5 +163,14 @@ module top (
     hazard_detection hazard_detect_unit2(
         .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
         .hazard({is_hazard2, hazard_reg2}), .stall(stall2)
+    );
+
+    forwarding forwarding_unit(
+        .clk(clk), .reset(rst),
+        .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
+        .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
+
+        .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
+        .rs1(id_ex_rs1), .rs2(id_ex_rs2)
     );
 endmodule
