@@ -169,8 +169,9 @@ module top (
         .clk(clk), .reset(rst),
         .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
         .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
+        .op(ex_mem_inst[6:0]),
 
-        .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
+        .pc4_in(ex_mem_pc4), .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
         .rs1(id_ex_rs1), .rs2(id_ex_rs2)
     );
 endmodule

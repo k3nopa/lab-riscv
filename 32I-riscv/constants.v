@@ -36,7 +36,7 @@
 `define NONE            3'd0
 `define FROM_EX_RS1     3'd1
 `define FROM_EX_RS2     3'd2
-`define FROM_MEM_RS1     3'd3
+`define FROM_MEM_RS1    3'd3
 `define FROM_MEM_RS2    3'd4
 
 // WB Target

@@ -1,8 +1,9 @@
 module forwarding(
     input               clk, reset,
     input               is_hazard1, is_hazard2,
+    input [6:0]         op,
     input [2:0]         hazard_reg1, hazard_reg2,
-    input [31:0]        alu_in, mem_alu_in, mem_rdata_in, rs1_in, rs2_in,
+    input [31:0]        pc4_in, alu_in, mem_alu_in, mem_rdata_in, rs1_in, rs2_in,
 
     output reg [31:0]   rs1, rs2
 );
@@ -126,14 +127,25 @@ module forwarding(
                     end
                     3 : begin
                         // forward from mem stage (rs1)
-                        rs1 <= (mem_rdata_in !== 32'hx) ? mem_rdata_in : mem_alu_in;
-                        rs2 <= rs2_in;
+                        if (op == `JALR || op == `JAL) begin
+                            rs1 <= pc4_in;
+                            rs2 <= rs2_in;
+                        end
+                        else begin
+                            rs1 <= (mem_rdata_in !== 32'hx) ? mem_rdata_in : mem_alu_in;
+                            rs2 <= rs2_in;
+                        end
                     end
                     4 : begin
-                        // forward from mem stage (rs2) 
-                        rs1 <= rs1_in;
-                        rs2 <= (mem_rdata_in !== 32'hx) ? mem_rdata_in : mem_alu_in;
-
+                        // forward from mem stage (rs2)
+                        if (op == `JALR || op == `JAL) begin
+                            rs1 <= pc4_in;
+                            rs2 <= rs2_in;
+                        end
+                        else begin
+                            rs1 <= rs1_in;
+                            rs2 <= (mem_rdata_in !== 32'hx) ? mem_rdata_in : mem_alu_in;
+                        end
                     end
                     default : begin
                         rs1 <= rs1_in;
