@@ -1,20 +1,20 @@
 `default_nettype none 
 
 `include "constants.v"
-`include "stages/if_stage.v"
-`include "stages/id_stage.v"
-`include "stages/ex_stage.v"
-`include "stages/mem_stage.v"
-`include "stages/wb_stage.v"
+`include "stages/IF/if_stage.v"
+`include "stages/IF/if_pc_adder.v"
+`include "stages/ID/id_stage.v"
+`include "stages/ID/id_control.v"
+`include "stages/ID/id_sign_extend.v"
+`include "stages/EX/ex_stage.v"
+`include "stages/EX/ex_alu.v"
+`include "stages/MEM/mem_stage.v"
+`include "stages/WB/wb_stage.v"
 
-`include "stages/if_pc_adder.v"
-`include "stages/id_control.v"
-`include "stages/id_sign_extend.v"
-`include "stages/ex_alu.v"
-`include "stages/reg32.v"
-`include "stages/hazard_detection.v"
-`include "stages/rf32x32.v"
-`include "stages/DW_ram_2r_w_s_dff.v"
+`include "stages/utils/reg32.v"
+`include "stages/utils/hazard_detection.v"
+`include "stages/utils/rf32x32.v"
+`include "stages/utils/DW_ram_2r_w_s_dff.v"
 
 `include "pipeline/ifid.v"
 `include "pipeline/idex.v"
@@ -83,7 +83,7 @@ module top (
     );
 
     IF_ID_PIPE if_id(
-        .clk(clk), .reset(rst), 
+        .clk(clk), .reset(rst),
         .pc_in(IAD), .pc4_in(pc4), .inst_in(IDT), .jump(jump), .branch(pc_src),
         .pc(if_id_pc), .pc4(if_id_pc4), .inst(if_id_inst)
     );
@@ -127,11 +127,11 @@ module top (
 
     EX_MEM_PIPE ex_mem(
         .clk(clk), .reset(rst),
-        .pc_in(id_ex_pc), .pc4_in(id_ex_pc4), .inst_in(id_ex_inst), .alu_in(alu), .rs2_in(id_ex_rs2), 
+        .pc_in(id_ex_pc), .pc4_in(id_ex_pc4), .inst_in(id_ex_inst), .alu_in(alu), .rs2_in(id_ex_rs2),
         .mem_read_in(id_ex_mem_read), .mem_write_in(id_ex_mem_write), .reg_write_in(id_ex_reg_write), .sign_in(id_ex_sign),
         .mem_to_reg_in(id_ex_mem_to_reg), .mem_size_in(id_ex_mem_size),
 
-        .pc(ex_mem_pc), .pc4(ex_mem_pc4), .inst(ex_mem_inst), .alu(ex_mem_alu), .rs2(ex_mem_rs2), 
+        .pc(ex_mem_pc), .pc4(ex_mem_pc4), .inst(ex_mem_inst), .alu(ex_mem_alu), .rs2(ex_mem_rs2),
         .mem_read(ex_mem_mem_read), .mem_write(ex_mem_mem_write), .reg_write(ex_mem_reg_write), .sign(ex_mem_sign),
         .mem_to_reg(ex_mem_mem_to_reg), .mem_size(ex_mem_mem_size)
     );

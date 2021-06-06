@@ -45,25 +45,18 @@ module ID_EX_PIPE(
         end
 
         if(stall1 || stall2 || branch) begin
-            mem_read <= 0;
-            mem_write <= 0;
-            //alu_src_a <= 1'bx;
-            //alu_src_b <= 1'bx;
-            reg_write <= 1;
-            //sign <= 0;
-
-            jump <= 2'bx;
-            mem_to_reg <= 2'bx;
-            //mem_size <= 0;
-            alu_op <= 0;
-
             pc <= pc_in;
             pc4 <= pc4_in;
             inst <= 0;
-            //branch_addr <= 0;
-            //rs1 <= 0;
-            //rs2 <= 0;
-            //sext <= 0;
+
+            mem_read <= 0;
+            mem_write <= 0;
+            reg_write <= 1;
+
+            jump <= 2'bx;
+            mem_to_reg <= 2'bx;
+            alu_op <= 0;
+
         end
         else begin
             mem_read <= mem_read_in;
@@ -82,8 +75,6 @@ module ID_EX_PIPE(
             pc4 <= pc4_in;
             inst <= inst_in;
             branch_addr <= branch_addr_in;
-//            rs1 <= rs1_in;
-//            rs2 <= rs2_in;
             sext <= sext_in;
         end
         /*
