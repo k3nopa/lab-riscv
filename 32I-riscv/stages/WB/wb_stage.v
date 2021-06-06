@@ -1,30 +1,28 @@
 module wb_stage (
-  input [31:0] pc4,
-  input [31:0] mem_rdata,
-  input [31:0] alu_result,
-  input [4:0] rd,
+    input [31:0]  pc4,
+    input [31:0]  mem_rdata,
+    input [31:0]  alu_result,
+    input [4:0]   rd,
 
-  input [1:0] mem_to_reg,
+    input [1:0]   mem_to_reg,
 
-  output [31:0] write_data
+    output [31:0] write_data
 );
 
-  localparam 
-    PC4 = 2'd0,
-    MEMDATA = 2'd1,
-    ALURESULT = 2'd2;
+    function [31:0] r_write_data(
+        input [31:0]    _pc4, _mem_rdata, _alu,
+        input [1:0]     _select
+    );
+        begin
+            case (_select)
+                `PC4: r_write_data = _pc4;
+                `MEMDATA: r_write_data = _mem_rdata;
+                `ALURESULT: r_write_data = _alu;
+                default: ;
+            endcase
+        end
+    endfunction
 
-  reg [31:0] r_write_data;
+    assign write_data = (rd == 5'b00000) ? 0 : r_write_data(pc4, mem_rdata, alu_result, mem_to_reg);
 
-  always @(*) begin
-    case (mem_to_reg)
-      PC4: r_write_data <= pc4;
-      MEMDATA: r_write_data <= mem_rdata;
-      ALURESULT: r_write_data <= alu_result;
-      default: r_write_data <= alu_result;
-    endcase
-  end
-
-  assign write_data = (rd == 5'b00000) ? 32'd0 : r_write_data;
-  
 endmodule

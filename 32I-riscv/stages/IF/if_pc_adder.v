@@ -1,8 +1,8 @@
 module if_pc_adder(
-    input reset, // active at low
+    input           reset, // active at low
 
-    input [31:0] pc,
-    output [31:0] pc4
+    input [31:0]    pc,
+    output [31:0]   pc4
 );
 
     function [31:0] pc_add4(

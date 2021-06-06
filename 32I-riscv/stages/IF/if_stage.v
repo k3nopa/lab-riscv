@@ -1,14 +1,14 @@
 module if_stage (
-    input reset, // active at low
-    input pc_src,
-    input stall,
-    input [1:0] jump,
-    input [31:0] pc,
-    input [31:0] branch_addr,
-    input [31:0] jump_addr,
+    input           reset, // active at low
+    input           pc_src,
+    input           stall,
+    input [1:0]     jump,
+    input [31:0]    pc,
+    input [31:0]    branch_addr,
+    input [31:0]    jump_addr,
 
-    output [31:0] pc4,
-    output [31:0] inst_addr
+    output [31:0]   pc4,
+    output [31:0]   inst_addr
 );
 
     wire [31:0] pc_in, current_pc, new_pc;

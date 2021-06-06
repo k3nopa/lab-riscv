@@ -1,10 +1,8 @@
 module forwarding(
-    input       clk, reset,
-
-    input       is_hazard1, is_hazard2,
-    input [2:0] hazard_reg1, hazard_reg2,
-
-    input [31:0]    alu_in, mem_alu_in, mem_rdata_in, rs1_in, rs2_in,
+    input               clk, reset,
+    input               is_hazard1, is_hazard2,
+    input [2:0]         hazard_reg1, hazard_reg2,
+    input [31:0]        alu_in, mem_alu_in, mem_rdata_in, rs1_in, rs2_in,
 
     output reg [31:0]   rs1, rs2
 );

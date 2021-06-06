@@ -1,12 +1,12 @@
 module MEM_WB_PIPE( 
-    input           clk, reset,
-    input [31:0]    pc4_in, inst_in, mem_rdata_in, alu_in,
-    input [1:0]     mem_to_reg_in,
-    input           reg_write_in,
+    input               clk, reset,
+    input [31:0]        pc4_in, inst_in, mem_rdata_in, alu_in,
+    input [1:0]         mem_to_reg_in,
+    input               reg_write_in,
 
-    output reg [31:0]    pc4, inst, mem_rdata, alu,
-    output reg [1:0]     mem_to_reg,
-    output reg           reg_write
+    output reg [31:0]   pc4, inst, mem_rdata, alu,
+    output reg [1:0]    mem_to_reg,
+    output reg          reg_write
 );
     always @(posedge clk) begin
         if (!reset) begin

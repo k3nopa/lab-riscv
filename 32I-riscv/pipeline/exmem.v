@@ -1,12 +1,12 @@
 module EX_MEM_PIPE(
-    input           clk, reset,
-    input [31:0]    pc_in, pc4_in, inst_in, alu_in, rs2_in, 
-    input           mem_read_in, mem_write_in, reg_write_in, sign_in,
-    input [1:0]     mem_to_reg_in, mem_size_in,
+    input               clk, reset,
+    input [31:0]        pc_in, pc4_in, inst_in, alu_in, rs2_in, 
+    input               mem_read_in, mem_write_in, reg_write_in, sign_in,
+    input [1:0]         mem_to_reg_in, mem_size_in,
 
-    output reg [31:0]    pc, pc4, inst, alu, rs2, 
-    output reg           mem_read, mem_write, reg_write, sign,
-    output reg [1:0]     mem_to_reg, mem_size
+    output reg [31:0]   pc, pc4, inst, alu, rs2, 
+    output reg          mem_read, mem_write, reg_write, sign,
+    output reg [1:0]    mem_to_reg, mem_size
 );
     always @(posedge clk or negedge reset) begin
         if (!reset) begin

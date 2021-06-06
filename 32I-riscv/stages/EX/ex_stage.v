@@ -1,15 +1,15 @@
 module ex_stage (
-    input [3:0] alu_op,
-    input alu_src_a,
-    input alu_src_b,
-    input is_signed,
-    input [31:0] pc,
-    input [31:0] a,
-    input [31:0] b,
-    input [31:0] sext,
+    input           alu_src_a,
+    input           alu_src_b,
+    input           is_signed,
+    input [3:0]     alu_op,
+    input [31:0]    pc,
+    input [31:0]    a,
+    input [31:0]    b,
+    input [31:0]    sext,
 
-    output branch_result,
-    output [31:0] alu_result // alu result
+    output          branch_result,
+    output [31:0]   alu_result
 );
 
     wire [31:0] alu_a, alu_b, test;

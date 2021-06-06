@@ -1,28 +1,20 @@
 module mem_stage (
-    input [31:0] address,
-    input [31:0] write_data,
-    input [1:0] inst_size,
-    input mem_read,
-    input mem_write,
-    input is_signed,
+    input [31:0]    address, write_data,
+    input [1:0]     inst_size,
+    input           mem_read, mem_write, is_signed,
 
     // data memory
-    input [31:0] rd_data,
+    input [31:0]    rd_data,
 
-    output [31:0] read_data,
+    output [31:0]   read_data,
 
     // data memory
-    output [1:0] access_size,
-    output [31:0] addr,
-    output write,
-    output mreq,
-    output [31:0] wr_data
+    output [1:0]    access_size,
+    output [31:0]   addr,
+    output          write,
+    output          mreq,
+    output [31:0]   wr_data
 );
-    localparam [1:0]
-    WORD = 2'b00,
-    HALF = 2'b01,
-    BYTE = 2'b10;
-
     function [31:0] load_conv(
         input _is_signed,
         input [1:0] _inst_size,
@@ -31,17 +23,17 @@ module mem_stage (
         begin
             if (_is_signed) begin
                 case (_inst_size)
-                    BYTE : load_conv = { {24{_mem_data[7]}}, _mem_data[7:0]};
-                    HALF : load_conv = { {16{_mem_data[15]}}, _mem_data[15:0]};
-                    WORD : load_conv = _mem_data;
+                    `BYTE : load_conv = { {24{_mem_data[7]}}, _mem_data[7:0]};
+                    `HALF : load_conv = { {16{_mem_data[15]}}, _mem_data[15:0]};
+                    `WORD : load_conv = _mem_data;
                     default: load_conv = _mem_data;
                 endcase
             end
             else begin
                 case (_inst_size)
-                    BYTE : load_conv = { {24{1'b0}}, _mem_data[7:0]};
-                    HALF : load_conv = { {16{1'b0}}, _mem_data[15:0]};
-                    WORD : load_conv = _mem_data;
+                    `BYTE : load_conv = { {24{1'b0}}, _mem_data[7:0]};
+                    `HALF : load_conv = { {16{1'b0}}, _mem_data[15:0]};
+                    `WORD : load_conv = _mem_data;
                     default: load_conv = _mem_data;
                 endcase
             end
@@ -54,9 +46,9 @@ module mem_stage (
     );
         begin
             case (_inst_size)
-                    BYTE : store_conv = { {24{1'b0}}, _mem_data[7:0]};
-                    HALF : store_conv = { {16{1'b0}}, _mem_data[15:0]};
-                    WORD : store_conv = _mem_data;
+                    `BYTE : store_conv = { {24{1'b0}}, _mem_data[7:0]};
+                    `HALF : store_conv = { {16{1'b0}}, _mem_data[15:0]};
+                    `WORD : store_conv = _mem_data;
                     default: store_conv = _mem_data;
                 endcase
         end

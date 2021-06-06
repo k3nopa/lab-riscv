@@ -1,9 +1,9 @@
 module hazard_detection(
-    input [31:0] current, before,
-    input next, // if next, means the next instruction. if !next, oldest instruction
+    input [31:0]    current, before,
+    input           next, // if next, means the next instruction. if !next, oldest instruction
 
-    output [3:0] hazard,
-    output stall
+    output [3:0]    hazard,
+    output          stall
 );
 
     function [4:0] hazard_check(input [31:0] _current, _before);

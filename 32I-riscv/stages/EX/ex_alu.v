@@ -1,10 +1,10 @@
 module ex_alu(
-    input is_signed,
-    input [31:0] a,
-    input [31:0] b,
-    input [3:0] op,
-    output branch, // 0: !branch, 1: branch
-    output [31:0] result
+    input           is_signed,
+    input [31:0]    a, b,
+    input [3:0]     op,
+
+    output          branch, // 0: !branch, 1: branch
+    output [31:0]   result
 );
     // ALU constants
     localparam [3:0]
