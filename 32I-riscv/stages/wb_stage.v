@@ -1,6 +1,6 @@
 module wb_stage (
   input [31:0] pc4,
-  input [31:0] mem_data,
+  input [31:0] mem_rdata,
   input [31:0] alu_result,
   input [4:0] rd,
 
@@ -19,12 +19,12 @@ module wb_stage (
   always @(*) begin
     case (mem_to_reg)
       PC4: r_write_data <= pc4;
-      MEMDATA: r_write_data <= mem_data;
+      MEMDATA: r_write_data <= mem_rdata;
       ALURESULT: r_write_data <= alu_result;
       default: r_write_data <= alu_result;
     endcase
   end
 
-  assign write_data = (rd === 5'b00000) ? 32'd0 : r_write_data;
+  assign write_data = (rd == 5'b00000) ? 32'd0 : r_write_data;
   
 endmodule

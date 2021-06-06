@@ -11,7 +11,7 @@ module if_pc_adder(
     );
 
         begin
-            if(!_reset || _pc === 32'h0000_0000)
+            if(!_reset)
                 pc_add4 = 32'h0001_0000;
             else
                 pc_add4 = _pc + 32'd4;
