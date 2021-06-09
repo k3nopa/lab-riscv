@@ -27,7 +27,7 @@ module id_stage (
     id_sign_extend imm_extend(.inst(inst), .extend_imm(extend_imm));
 
     /* ----- Address Adder ----- */
-    assign sign_extend = (shift_amount !== 5'hx) ? shift_amount : extend_imm;
+    assign sign_extend = (shift_amount != 5'hx) ? shift_amount : extend_imm;
     assign branch_addr = pc + extend_imm;
 
     assign controls = {mem_read, mem_write, alu_src_a, alu_src_b, mem_to_reg, alu_op, reg_write, jump};
