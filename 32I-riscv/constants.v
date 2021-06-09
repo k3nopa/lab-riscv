@@ -1,5 +1,5 @@
 // Instructions
-`define NONE            7'b0000000
+`define NONE            7'b0000011
 `define LUI             7'b0110111
 `define AUIPC           7'b0010111
 `define IMM             7'b0010011
@@ -33,6 +33,7 @@
 `define BYTE            2'b10
 
 // Hazard Forward Target
+// TODO: add new target for jump hazard for rs1 or rs2 target (take all data from mem, cause inst at id is already 0 due to jump pipeling flushing)
 `define NONE            3'd0
 `define FROM_EX_RS1     3'd1
 `define FROM_EX_RS2     3'd2
