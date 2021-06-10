@@ -48,7 +48,7 @@ module ID_EX_PIPE(
             mem_write <= 0;
             reg_write <= 1;
 
-            jump <= 2'bx;
+            jump <= 2'b0;
             mem_to_reg <= 2'bx;
             alu_op <= 0;
 

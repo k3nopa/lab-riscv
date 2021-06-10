@@ -50,12 +50,12 @@ module forwarding(
                         3 : begin
                             // forward from mem stage (rs1)
                             // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                            rs1 <= (mem_rdata_in != 32'hx) ? mem_rdata_in : mem_alu_in;
+                            rs1 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                         end
                         4 : begin
                             // forward from mem stage (rs2) 
                             // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                            rs2 <= (mem_rdata_in != 32'hx) ? mem_rdata_in : mem_alu_in;
+                            rs2 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                         end
                         default : ;
                     endcase
@@ -133,7 +133,7 @@ module forwarding(
                                 rs2 <= rs2_in;
                             end
                             else begin
-                                rs1 <= (mem_rdata_in != 32'hx) ? mem_rdata_in : mem_alu_in;
+                                rs1 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                                 rs2 <= rs2_in;
                             end
                         end
@@ -145,7 +145,7 @@ module forwarding(
                             end
                             else begin
                                 rs1 <= rs1_in;
-                                rs2 <= (mem_rdata_in != 32'hx) ? mem_rdata_in : mem_alu_in;
+                                rs2 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                             end
                         end
                         default : begin

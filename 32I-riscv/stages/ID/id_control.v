@@ -7,7 +7,7 @@ module id_control(
     output is_signed,
     output [1:0] inst_size,
     output [3:0] alu_op,
-    output [4:0] shift_amount
+    output [31:0] imm
 );
     // Instructions' Format in Parts
     wire [6:0] op_part = inst[6:0];
@@ -66,6 +66,9 @@ module id_control(
     wire bltu    = (`BRANCH == op_part) && (3'b110 == f3_part);
     wire bgeu    = (`BRANCH == op_part) && (3'b111 == f3_part);
 
+    wire [31:0] extend_imm;
+    id_sign_extend imm_extend(.inst(inst), .extend_imm(extend_imm));
+
     // reg_write is active at low
     always @(*) begin
 
@@ -76,7 +79,7 @@ module id_control(
             alu_src_a = 1'bx;
             alu_src_b = 1'bx;
             mem_to_reg = 2'bxx;
-            jump = 2'bxx;
+            jump = 2'b00;   // can't use xx, because !== can't be use in synthesis
         end
 
         else begin
@@ -88,7 +91,7 @@ module id_control(
                     alu_src_a = 1'bx;
                     alu_src_b = 1'bx;
                     mem_to_reg = 2'bxx;
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `LUI: begin
                     mem_read = 1'b0;
@@ -97,7 +100,7 @@ module id_control(
                     alu_src_a = 1'bx;
                     alu_src_b = 1'b1; // sext
                     mem_to_reg = 2'd2; // alu
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `AUIPC: begin
                     mem_read = 1'b0;
@@ -106,7 +109,7 @@ module id_control(
                     alu_src_a = 1'b0; // pc
                     alu_src_b = 1'b1; // sext
                     mem_to_reg = 2'd2; // alu
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `IMM: begin
                     mem_read = 1'b0;
@@ -115,7 +118,7 @@ module id_control(
                     alu_src_a = 1'b1; // reg
                     alu_src_b = 1'b1; // sext
                     mem_to_reg = 2'd2; // alu
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `LOAD: begin
                     mem_read = 1'b1;
@@ -124,7 +127,7 @@ module id_control(
                     alu_src_a = 1'b1; // reg
                     alu_src_b = 1'b1; // sext
                     mem_to_reg = 2'd1; // mem data
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `STORE: begin
                     mem_read = 1'b0;
@@ -133,7 +136,7 @@ module id_control(
                     alu_src_a = 1'b1; // reg
                     alu_src_b = 1'b1; // sext
                     mem_to_reg = 2'bxx; // none
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `R_TYPE: begin
                     mem_read = 1'b0;
@@ -142,7 +145,7 @@ module id_control(
                     alu_src_a = 1'b1; // reg
                     alu_src_b = 1'b0; // reg
                     mem_to_reg = 2'd2; // alu
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `BRANCH: begin
                     mem_read = 1'b0;
@@ -151,7 +154,7 @@ module id_control(
                     alu_src_a = 1'b1; // reg
                     alu_src_b = 1'b0; // reg
                     mem_to_reg = 2'bxx; // none
-                    jump = 2'bxx;
+                    jump = 2'b00;
                 end
                 `JAL: begin
                     mem_read = 1'b0;
@@ -197,6 +200,6 @@ module id_control(
 
     assign is_signed = (lbu || lhu || sltu || sltiu || bltu || bgeu) ? 1'b0 : 1'b1;
 
-    assign shift_amount = (sll || slli || srl || srli || sra || srai) ? inst[24:20] : 5'bx;
+    assign imm = (sll || slli || srl || srli || sra || srai) ? inst[24:20] : extend_imm;
 
 endmodule

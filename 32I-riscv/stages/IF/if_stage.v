@@ -3,6 +3,7 @@ module if_stage (
     input           pc_src,
     input           stall,
     input [1:0]     jump,
+
     input [31:0]    pc,
     input [31:0]    branch_addr,
     input [31:0]    jump_addr,
@@ -26,8 +27,8 @@ module if_stage (
 
     if_pc_adder pc_adder(.reset(reset), .pc(current_pc), .pc4(new_pc));
 
-    assign pc_in = (jump != 2'dx && jump == 2'd2) ? jump_addr : mux(pc, branch_addr, pc_src);
-    assign current_pc = (stall != 2'dx && stall == 1'b1) ? (pc_in - 4) : pc_in; 
+    assign pc_in = (jump == 2'b10) ? jump_addr : mux(pc, branch_addr, pc_src);
+    assign current_pc = (stall == 1'b1) ? (pc_in - 4) : pc_in; 
     
     assign inst_addr = current_pc;
     assign pc4 = new_pc;
