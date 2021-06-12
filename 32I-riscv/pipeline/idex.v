@@ -6,7 +6,7 @@
  */
 module ID_EX_PIPE(
     input               clk, reset,
-    input                stall1, stall2, branch, 
+    input                stall, branch,
 
     input               mem_read_in, mem_write_in, alu_src_a_in, alu_src_b_in, reg_write_in, sign_in,
     input [1:0]         jump_in, mem_to_reg_in, mem_size_in,
@@ -39,38 +39,40 @@ module ID_EX_PIPE(
             sext <= 0;
         end
 
-        if(stall1 || stall2 || branch) begin
-            pc <= pc_in;
-            pc4 <= pc4_in;
-            inst <= 0;
-
-            mem_read <= 0;
-            mem_write <= 0;
-            reg_write <= 1;
-
-            jump <= 2'b0;
-            mem_to_reg <= 2'bx;
-            alu_op <= 0;
-
-        end
         else begin
-            mem_read <= mem_read_in;
-            mem_write <= mem_write_in;
-            alu_src_a <= alu_src_a_in;
-            alu_src_b <= alu_src_b_in;
-            reg_write <= reg_write_in;
-            sign <= sign_in;
+            if(stall || branch) begin
+                pc <= pc_in;
+                pc4 <= pc4_in;
+                inst <= 0;
 
-            jump <= jump_in;
-            mem_to_reg <= mem_to_reg_in;
-            mem_size <= mem_size_in;
-            alu_op <= alu_op_in;
+                mem_read <= 0;
+                mem_write <= 0;
+                reg_write <= 1;
 
-            pc <= pc_in;
-            pc4 <= pc4_in;
-            inst <= inst_in;
-            branch_addr <= branch_addr_in;
-            sext <= sext_in;
+                jump <= 2'b0;
+                mem_to_reg <= 2'bx;
+                alu_op <= 0;
+
+            end
+            else begin
+                mem_read <= mem_read_in;
+                mem_write <= mem_write_in;
+                alu_src_a <= alu_src_a_in;
+                alu_src_b <= alu_src_b_in;
+                reg_write <= reg_write_in;
+                sign <= sign_in;
+
+                jump <= jump_in;
+                mem_to_reg <= mem_to_reg_in;
+                mem_size <= mem_size_in;
+                alu_op <= alu_op_in;
+
+                pc <= pc_in;
+                pc4 <= pc4_in;
+                inst <= inst_in;
+                branch_addr <= branch_addr_in;
+                sext <= sext_in;
+            end
         end
     end
 endmodule

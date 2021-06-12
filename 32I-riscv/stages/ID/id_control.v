@@ -2,8 +2,8 @@ module id_control(
     input reset, // active at low
     input [31:0] inst,
 
-    output reg mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
-    output reg [1:0] mem_to_reg, jump, // 10(2) -> jump
+    output  mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
+    output [1:0] mem_to_reg, jump, 
     output is_signed,
     output [1:0] inst_size,
     output [3:0] alu_op,
@@ -67,117 +67,55 @@ module id_control(
     wire bgeu    = (`BRANCH == op_part) && (3'b111 == f3_part);
 
     wire [31:0] extend_imm;
+
+    function [8:0] controller(
+        input rst,
+        input [6:0] op
+    );
+
+        begin
+            if (!rst || op == 0) begin
+                // can't use xx for jump, because !== can't be use in synthesis
+                controller = {1'b0, 1'b0, 1'bx, 1'bx, 2'bx, 1'b1, 2'b0};
+            end
+            else begin
+                case (op)
+                    `LUI: begin
+                        controller = {1'b0, 1'b0, 1'bx, 1'b1, 2'd2, 1'b0, 2'b0};
+                    end
+                    `AUIPC: begin
+                        controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
+                    end
+                    `IMM: begin
+                        controller = {1'b0, 1'b0, 1'b1, 1'b1, 2'd2, 1'b0, 2'b0};
+                    end
+                    `LOAD: begin
+                        controller = {1'b1, 1'b0, 1'b1, 1'b1, 2'd1, 1'b0, 2'b0};
+                    end
+                    `STORE: begin
+                        controller = {1'b0, 1'b1, 1'b1, 1'b1, 2'bx, 1'b1, 2'b0};
+                    end
+                    `R_TYPE: begin
+                        controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'd2, 1'b0, 2'b0};
+                    end
+                    `BRANCH: begin
+                        controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'bx, 1'b1, 2'b0};
+                    end
+                    `JAL: begin
+                        controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd0, 1'b0, 2'd2};
+                    end
+                    `JALR: begin
+                        controller = {1'b0, 1'b0, 1'b1, 1'b1, 2'b0, 1'b0, 2'd2};
+                    end
+                    default: ;
+                endcase
+            end
+        end
+    endfunction
+
     id_sign_extend imm_extend(.inst(inst), .extend_imm(extend_imm));
 
-    // reg_write is active at low
-    always @(*) begin
-
-        if (!reset) begin
-            mem_read = 1'b0;
-            mem_write = 1'b0;
-            reg_write = 1'b1;
-            alu_src_a = 1'bx;
-            alu_src_b = 1'bx;
-            mem_to_reg = 2'bxx;
-            jump = 2'b00;   // can't use xx, because !== can't be use in synthesis
-        end
-
-        else begin
-            case (op_part)
-                `NONE: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b1;
-                    alu_src_a = 1'bx;
-                    alu_src_b = 1'bx;
-                    mem_to_reg = 2'bxx;
-                    jump = 2'b00;
-                end
-                `LUI: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'bx;
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'd2; // alu
-                    jump = 2'b00;
-                end
-                `AUIPC: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b0; // pc
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'd2; // alu
-                    jump = 2'b00;
-                end
-                `IMM: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'd2; // alu
-                    jump = 2'b00;
-                end
-                `LOAD: begin
-                    mem_read = 1'b1;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'd1; // mem data
-                    jump = 2'b00;
-                end
-                `STORE: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b1;
-                    reg_write = 1'b1;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'bxx; // none
-                    jump = 2'b00;
-                end
-                `R_TYPE: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b0; // reg
-                    mem_to_reg = 2'd2; // alu
-                    jump = 2'b00;
-                end
-                `BRANCH: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b1;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b0; // reg
-                    mem_to_reg = 2'bxx; // none
-                    jump = 2'b00;
-                end
-                `JAL: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b0; // pc
-                    alu_src_b = 1'b1; // sext
-                    mem_to_reg = 2'd0; // pc4
-                    jump = 2'd2;
-                end
-                `JALR: begin
-                    mem_read = 1'b0;
-                    mem_write = 1'b0;
-                    reg_write = 1'b0;
-                    alu_src_a = 1'b1; // reg
-                    alu_src_b = 1'b1; // reg
-                    mem_to_reg = 2'd0; // pc4
-                    jump = 2'd2;
-                end
-                default: ;
-            endcase
-        end
-    end
+    assign {mem_read, mem_write, alu_src_a, alu_src_b, mem_to_reg, reg_write, jump} = controller(reset, op_part);
 
     assign alu_op =
     (add || addi || auipc || load || store || jal || jalr) ? `ALU_ADD :
