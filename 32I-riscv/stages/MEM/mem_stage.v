@@ -40,20 +40,6 @@ module mem_stage (
         end
     endfunction
 
-    function [31:0] store_conv(
-        input [1:0] _inst_size,
-        input [31:0] _mem_data
-    );
-        begin
-            case (_inst_size)
-                    `BYTE : store_conv = { {24{1'b0}}, _mem_data[7:0]};
-                    `HALF : store_conv = { {16{1'b0}}, _mem_data[15:0]};
-                    `WORD : store_conv = _mem_data;
-                    default: store_conv = _mem_data;
-                endcase
-        end
-    endfunction
-
     assign addr = address;
     assign access_size = inst_size;
 
@@ -61,6 +47,6 @@ module mem_stage (
     assign read_data = (mem_read) ? load_conv(is_signed, inst_size, rd_data) : 32'hx;
 
     assign write = (mem_write) ? 1 : 0;
-    assign wr_data = (mem_write) ? store_conv(inst_size, write_data) : 32'hx;
+    assign wr_data = (mem_write) ?  write_data : 32'hx;
 
 endmodule
