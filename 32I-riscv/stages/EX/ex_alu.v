@@ -11,11 +11,7 @@ module ex_alu(
         input [3:0] in_op,
         input [31:0] in_a, in_b
     );
-        reg signed [31:0] s_in_a, s_in_b;
-
         begin
-            s_in_a = in_a;
-            s_in_b = in_b;
             case (in_op)
                 `ALU_LUI: arithematic = in_b;
                 `ALU_ADD: arithematic = in_a + in_b;
@@ -26,10 +22,10 @@ module ex_alu(
                 `ALU_XOR: arithematic = in_a ^ in_b;
                 `ALU_SLL: arithematic = in_a << in_b;
                 `ALU_SRL: arithematic = in_a >> in_b;
-                `ALU_SRA: arithematic = s_in_a >>> in_b;
+                `ALU_SRA: arithematic = $signed(in_a) >>> $signed(in_b);
                 `ALU_SLT: begin
                     if (is_signed)
-                        arithematic = (s_in_a < s_in_b)  ? 1'b1 : 1'b0;
+                        arithematic = ($signed(in_a) < $signed(in_b))  ? 1'b1 : 1'b0;
                     else
                         arithematic = (in_a < in_b)  ? 1'b1 : 1'b0;
                 end
@@ -43,24 +39,20 @@ module ex_alu(
         input [31:0] in_a, in_b
     );
 
-        reg signed [31:0] in_s_a, in_s_b;
-
         begin
-            in_s_a = in_a;
-            in_s_b = in_b;
             case(in_op)
                 `ALU_BEQ: _branch = (in_a == in_b) ? 1'b1 : 1'b0;
                 `ALU_BNE: _branch = (in_a != in_b) ? 1'b1 : 1'b0;
                 `ALU_BGE: begin
                     if(is_signed) begin
-                        _branch = (in_s_a >= in_s_b) ? 1'b1 : 1'b0;
+                        _branch = ($signed(in_a) >= $signed(in_b)) ? 1'b1 : 1'b0;
                     end
                     else
                         _branch = (in_a >= in_b) ? 1'b1 : 1'b0;
                 end
                 `ALU_BLT: begin
                     if(is_signed)
-                        _branch = (in_s_a < in_s_b) ? 1'b1 : 1'b0;
+                        _branch = ($signed(in_a) < $signed(in_b)) ? 1'b1 : 1'b0;
                     else
                         _branch = (in_a < in_b) ? 1'b1 : 1'b0;
                 end
