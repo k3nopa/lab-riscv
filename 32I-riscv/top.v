@@ -14,6 +14,7 @@
 `include "stages/utils/reg32.v"
 `include "stages/utils/hazard_detection.v"
 `include "stages/utils/forwarding.v"
+`include "stages/utils/stalling.v"
 `include "stages/utils/rf32x32.v"
 `include "stages/utils/DW_ram_2r_w_s_dff.v"
 
@@ -54,7 +55,7 @@ module top (
     wire [31:0]     mem_rdata, rs1_data, rs2_data, alu, rd_write_data;
 
     // Forwarding & Hazard Detection & Stall
-    wire            is_hazard1, stall1, is_hazard2, stall2;
+    wire            is_hazard1, is_hazard2, stall;
     wire [2:0]      hazard_reg1, hazard_reg2;
 
     // Pipelines
@@ -79,7 +80,7 @@ module top (
     );
 
     if_stage if_phase(
-        .reset(rst), .pc(pc), .branch_addr(id_ex_branch_addr), .jump_addr(alu), .pc_src(pc_src), .jump(id_ex_jump), .stall(stall1 || stall2),
+        .reset(rst), .pc(pc), .branch_addr(id_ex_branch_addr), .jump_addr(alu), .pc_src(pc_src), .jump(id_ex_jump), .stall(stall),
         .pc4(pc4), .inst_addr(IAD)
     );
 
@@ -105,7 +106,7 @@ module top (
 
     ID_EX_PIPE id_ex(
         .clk(clk), .reset(rst),
-        .stall1(stall1), .stall2(stall2), .branch(pc_src),
+        .stall(stall), .branch(pc_src),
 
         .mem_read_in(mem_read), .mem_write_in(mem_write), .alu_src_a_in(alu_src_a), .alu_src_b_in(alu_src_b), .reg_write_in(reg_write), .sign_in(is_signed),
         .jump_in(jump), .mem_to_reg_in(mem_to_reg), .mem_size_in(inst_size),
@@ -157,13 +158,15 @@ module top (
 
     hazard_detection hazard_detect_unit1(
         .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
-        .hazard({is_hazard1, hazard_reg1}), .stall(stall1)
+        .hazard({is_hazard1, hazard_reg1})
     );
 
     hazard_detection hazard_detect_unit2(
         .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
-        .hazard({is_hazard2, hazard_reg2}), .stall(stall2)
+        .hazard({is_hazard2, hazard_reg2})
     );
+
+    stalling stall_unit(.if_inst(if_id_inst), .id_inst(id_ex_inst), .stall(stall));
 
     forwarding forwarding_unit(
         .clk(clk), .reset(rst),
