@@ -1,5 +1,4 @@
 // Instructions
-`define NONE            7'b0000011
 `define LUI             7'b0110111
 `define AUIPC           7'b0010111
 `define IMM             7'b0010011
