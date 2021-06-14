@@ -16,7 +16,6 @@ module ex_alu(
                 `ALU_LUI: arithematic = in_b;
                 `ALU_ADD: arithematic = in_a + in_b;
                 `ALU_SUB: arithematic = in_a - in_b;
-                `ALU_MUL: arithematic = in_a * in_b;
                 `ALU_AND: arithematic = in_a & in_b;
                 `ALU_OR : arithematic = in_a | in_b;
                 `ALU_XOR: arithematic = in_a ^ in_b;
