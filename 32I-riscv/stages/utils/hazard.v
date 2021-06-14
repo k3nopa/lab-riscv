@@ -20,6 +20,4 @@ module hazard(
     // set to zero, so it will forward the data from regfile
     assign {is_hazard2, hazard_reg2} = (hazard1[2:0] == 1 && hazard2[2:0] == 3 || hazard1[2:0] == 3 && hazard2[2:0] == 1) ? 4'd0 : hazard2;
     assign {is_hazard1, hazard_reg1} = (hazard1[2:0] == 2 && hazard2[2:0] == 4 || hazard1[2:0] == 4 && hazard2[2:0] == 2) ? 4'd0 : hazard1;
-    //  assign hazard_reg1 = hazard1;
-    //  assign hazard_reg2 = hazard2;
 endmodule
