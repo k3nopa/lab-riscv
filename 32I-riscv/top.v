@@ -14,7 +14,6 @@
 `include "stages/utils/reg32.v"
 `include "stages/utils/hazard.v"
 `include "stages/utils/hazard_detection.v"
-`include "stages/utils/forwarding_helper.v"
 `include "stages/utils/forwarding.v"
 `include "stages/utils/stalling.v"
 `include "stages/utils/rf32x32.v"
@@ -159,16 +158,6 @@ module top (
         .write_data(rd_write_data)
     );
 
-//    hazard_detection hazard_detect_unit1(
-//        .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
-//        .hazard({is_hazard1, hazard_reg1})
-//    );
-//
-//    hazard_detection hazard_detect_unit2(
-//        .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
-//        .hazard({is_hazard2, hazard_reg2})
-//    );
-
     hazard hazard_unit(
        .if_id_inst(if_id_inst), .id_ex_inst(id_ex_inst), .ex_mem_inst(ex_mem_inst),
        .is_hazard1(is_hazard1), .is_hazard2(is_hazard2), 
@@ -185,14 +174,4 @@ module top (
 
         .rs1(rs1_in), .rs2(rs2_in)
     );
-
-    // forwarding forwarding_unit(
-    //     .clk(clk), .reset(rst),
-    //     .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
-    //     .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
-    //     .op(ex_mem_inst[6:0]),
-
-    //     .pc4_in(ex_mem_pc4), .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
-    //     .rs1(id_ex_rs1), .rs2(id_ex_rs2)
-    // );
 endmodule
