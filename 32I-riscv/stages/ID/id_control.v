@@ -1,13 +1,13 @@
 module id_control(
-    input reset, // active at low
-    input [31:0] inst,
+    input           reset, // active at low
+    input [31:0]    inst,
 
-    output  mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
-    output [1:0] mem_to_reg, jump, 
-    output is_signed,
-    output [1:0] inst_size,
-    output [3:0] alu_op,
-    output [31:0] imm
+    output          mem_read, mem_write, reg_write, alu_src_a, alu_src_b,
+    output [1:0]    mem_to_reg, jump, 
+    output          is_signed,
+    output [1:0]    inst_size,
+    output [3:0]    alu_op,
+    output [31:0]   imm
 );
     // Instructions' Format in Parts
     wire [6:0] op_part = inst[6:0];
@@ -27,13 +27,13 @@ module id_control(
     wire lw      = (`LOAD == op_part) && (3'b010 == f3_part);
     wire lbu     = (`LOAD == op_part) && (3'b100 == f3_part);
     wire lhu     = (`LOAD == op_part) && (3'b101 == f3_part);
-    wire load    = (lb || lh || lw || lbu || lhu);
+    wire load    = (`LOAD == op_part);
 
     // Store Instructions
     wire sb       = (`STORE == op_part) && (3'b000 == f3_part);
     wire sh       = (`STORE == op_part) && (3'b001 == f3_part);
     wire sw       = (`STORE == op_part) && (3'b010 == f3_part);
-    wire store    = (sb || sh || sw);
+    wire store    = (`STORE == op_part);
 
     // I-Type Instructions
     wire addi   = (`IMM == op_part) && (3'b000 == f3_part);
@@ -74,40 +74,30 @@ module id_control(
     );
 
         begin
-            if (!rst || op == 0) begin
+            if (!rst || op == 0)
                 // can't use xx for jump, because !== can't be use in synthesis
                 // change alu_src_a & alu_src_b from x to any number, where in this case changed to 0
                 controller = {1'b0, 1'b0, 1'b0, 1'b0, 2'bx, 1'b1, 2'b0};
-            end
             else begin
                 case (op)
-                    `LUI: begin
+                    `LUI:
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
-                    end
-                    `AUIPC: begin
+                    `AUIPC: 
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
-                    end
-                    `IMM: begin
+                    `IMM: 
                         controller = {1'b0, 1'b0, 1'b1, 1'b1, 2'd2, 1'b0, 2'b0};
-                    end
-                    `LOAD: begin
+                    `LOAD: 
                         controller = {1'b1, 1'b0, 1'b1, 1'b1, 2'd1, 1'b0, 2'b0};
-                    end
-                    `STORE: begin
+                    `STORE: 
                         controller = {1'b0, 1'b1, 1'b1, 1'b1, 2'bx, 1'b1, 2'b0};
-                    end
-                    `R_TYPE: begin
+                    `R_TYPE: 
                         controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'd2, 1'b0, 2'b0};
-                    end
-                    `BRANCH: begin
+                    `BRANCH: 
                         controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'bx, 1'b1, 2'b0};
-                    end
-                    `JAL: begin
+                    `JAL: 
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd0, 1'b0, 2'd2};
-                    end
-                    `JALR: begin
+                    `JALR: 
                         controller = {1'b0, 1'b0, 1'b1, 1'b1, 2'b0, 1'b0, 2'd2};
-                    end
                     default: ;
                 endcase
             end
