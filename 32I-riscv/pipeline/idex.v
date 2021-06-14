@@ -6,7 +6,7 @@
  */
 module ID_EX_PIPE(
     input               clk, reset,
-    input               stall, branch, forward,
+    input               stall, branch,
 
     input               mem_read_in, mem_write_in, alu_src_a_in, alu_src_b_in, reg_write_in, sign_in,
     input [1:0]         jump_in, mem_to_reg_in, mem_size_in,
@@ -22,8 +22,8 @@ module ID_EX_PIPE(
         if (!reset) begin
             mem_read <= 0;
             mem_write <= 0;
-            alu_src_a <= 1'bx;
-            alu_src_b <= 1'bx;
+            alu_src_a <= 1'b0;
+            alu_src_b <= 1'b0;
             reg_write <= 1;
             sign <= 0;
 
@@ -43,8 +43,6 @@ module ID_EX_PIPE(
 
         else begin
             if(stall || branch) begin
-                pc <= pc_in;
-                pc4 <= pc4_in;
                 inst <= 0;
 
                 mem_read <= 0;
