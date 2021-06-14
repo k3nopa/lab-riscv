@@ -3,17 +3,10 @@ module stalling(
 
     output stall
 );
-
-    wire [6:0] id_op  = id_inst[6:0];
-    wire [4:0] rd     = id_inst[11:7];
-
-    wire [4:0] rs1    = if_inst[19:15];
-    wire [4:0] rs2    = if_inst[24:20];
-
-    function staller(input [6:0] op);
+    function staller(input [31:0] before, input [31:0] current);
         begin
-            if (op == `LOAD) begin
-                if (rd != 5'h0 && rs1 != 5'h0 && ( rd == rs1 || rd == rs2 ))
+            if (before[6:0] == `LOAD && before[11:7] != 5'h0) begin
+                if (before[11:7] == current[19:15] || before[11:7] == current[24:20]) 
                     staller = 1'b1;
                 else 
                    staller = 1'b0;
@@ -23,5 +16,5 @@ module stalling(
         end
     endfunction
 
-    assign stall = staller(id_op);
+    assign stall = staller(id_inst, if_inst);
 endmodule

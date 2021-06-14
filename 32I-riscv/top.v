@@ -12,7 +12,9 @@
 `include "stages/WB/wb_stage.v"
 
 `include "stages/utils/reg32.v"
+`include "stages/utils/hazard.v"
 `include "stages/utils/hazard_detection.v"
+`include "stages/utils/forwarding_helper.v"
 `include "stages/utils/forwarding.v"
 `include "stages/utils/stalling.v"
 `include "stages/utils/rf32x32.v"
@@ -57,6 +59,7 @@ module top (
     // Forwarding & Hazard Detection & Stall
     wire            is_hazard1, is_hazard2, stall;
     wire [2:0]      hazard_reg1, hazard_reg2;
+    wire [31:0]     rs1_in, rs2_in;
 
     // Pipelines
     wire [31:0]     if_id_pc, if_id_pc4, if_id_inst;
@@ -111,12 +114,12 @@ module top (
         .mem_read_in(mem_read), .mem_write_in(mem_write), .alu_src_a_in(alu_src_a), .alu_src_b_in(alu_src_b), .reg_write_in(reg_write), .sign_in(is_signed),
         .jump_in(jump), .mem_to_reg_in(mem_to_reg), .mem_size_in(inst_size),
         .alu_op_in(alu_op),
-        .pc_in(if_id_pc), .pc4_in(if_id_pc4), .inst_in(if_id_inst), .branch_addr_in(branch_addr), .sext_in(sext),
+        .pc_in(if_id_pc), .pc4_in(if_id_pc4), .inst_in(if_id_inst), .branch_addr_in(branch_addr), .sext_in(sext), .rs1_in(rs1_in), .rs2_in(rs2_in),
 
         .mem_read(id_ex_mem_read), .mem_write(id_ex_mem_write), .alu_src_a(id_ex_alu_src_a), .alu_src_b(id_ex_alu_src_b), .reg_write(id_ex_reg_write), .sign(id_ex_sign),
         .jump(id_ex_jump), .mem_to_reg(id_ex_mem_to_reg), .mem_size(id_ex_mem_size),
         .alu_op(id_ex_alu_op),
-        .pc(id_ex_pc), .pc4(id_ex_pc4), .inst(id_ex_inst), .branch_addr(id_ex_branch_addr), .sext(id_ex_sext)
+        .pc(id_ex_pc), .pc4(id_ex_pc4), .inst(id_ex_inst), .branch_addr(id_ex_branch_addr), .sext(id_ex_sext), .rs1(id_ex_rs1), .rs2(id_ex_rs2)
     );
 
     ex_stage ex_phase(
@@ -156,25 +159,40 @@ module top (
         .write_data(rd_write_data)
     );
 
-    hazard_detection hazard_detect_unit1(
-        .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
-        .hazard({is_hazard1, hazard_reg1})
-    );
+//    hazard_detection hazard_detect_unit1(
+//        .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
+//        .hazard({is_hazard1, hazard_reg1})
+//    );
+//
+//    hazard_detection hazard_detect_unit2(
+//        .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
+//        .hazard({is_hazard2, hazard_reg2})
+//    );
 
-    hazard_detection hazard_detect_unit2(
-        .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
-        .hazard({is_hazard2, hazard_reg2})
+    hazard hazard_unit(
+       .if_id_inst(if_id_inst), .id_ex_inst(id_ex_inst), .ex_mem_inst(ex_mem_inst),
+       .is_hazard1(is_hazard1), .is_hazard2(is_hazard2), 
+       .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2) 
     );
 
     stalling stall_unit(.if_inst(if_id_inst), .id_inst(id_ex_inst), .stall(stall));
 
-    forwarding forwarding_unit(
-        .clk(clk), .reset(rst),
+    forwarding forwarder(
         .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
         .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
         .op(ex_mem_inst[6:0]),
-
         .pc4_in(ex_mem_pc4), .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
-        .rs1(id_ex_rs1), .rs2(id_ex_rs2)
+
+        .rs1(rs1_in), .rs2(rs2_in)
     );
+
+    // forwarding forwarding_unit(
+    //     .clk(clk), .reset(rst),
+    //     .is_hazard1(is_hazard1), .is_hazard2(is_hazard2),
+    //     .hazard_reg1(hazard_reg1), .hazard_reg2(hazard_reg2),
+    //     .op(ex_mem_inst[6:0]),
+
+    //     .pc4_in(ex_mem_pc4), .alu_in(alu), .mem_alu_in(ex_mem_alu), .mem_rdata_in(mem_rdata), .rs1_in(rs1_data), .rs2_in(rs2_data),
+    //     .rs1(id_ex_rs1), .rs2(id_ex_rs2)
+    // );
 endmodule
