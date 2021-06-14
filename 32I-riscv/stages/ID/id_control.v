@@ -76,12 +76,13 @@ module id_control(
         begin
             if (!rst || op == 0) begin
                 // can't use xx for jump, because !== can't be use in synthesis
-                controller = {1'b0, 1'b0, 1'bx, 1'bx, 2'bx, 1'b1, 2'b0};
+                // change alu_src_a & alu_src_b from x to any number, where in this case changed to 0
+                controller = {1'b0, 1'b0, 1'b0, 1'b0, 2'bx, 1'b1, 2'b0};
             end
             else begin
                 case (op)
                     `LUI: begin
-                        controller = {1'b0, 1'b0, 1'bx, 1'b1, 2'd2, 1'b0, 2'b0};
+                        controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
                     end
                     `AUIPC: begin
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
