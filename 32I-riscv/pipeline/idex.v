@@ -42,59 +42,39 @@ module ID_EX_PIPE(
         end
 
         else begin
-            mem_read <= (stall || branch) ? 0 : mem_read_in;
-            mem_write <= (stall || branch) ? 0 : mem_write_in;
-            alu_src_a <= alu_src_a_in;
-            alu_src_b <= alu_src_b_in;
-            reg_write <= reg_write_in;
-            sign <= sign_in;
+            if(stall || branch) begin
+                inst <= 0;
 
-            jump <= (stall || branch)? 2'b0 : jump_in;
-            mem_to_reg <= mem_to_reg_in;
-            mem_size <= mem_size_in;
-            alu_op <= (stall || branch)? 0 : alu_op_in;
+                mem_read <= 0;
+                mem_write <= 0;
+                reg_write <= 1;
 
-            pc <= pc_in;
-            pc4 <= pc4_in;
-            inst <= (stall || branch) ? 32'b0 : inst_in;
-            branch_addr <= branch_addr_in;
-            sext <= sext_in;
-            rs1 <= rs1_in;
-            rs2 <= rs2_in;
+                jump <= 2'b0;
+                mem_to_reg <= 2'bx;
+                alu_op <= 0;
+
+            end
+            else begin
+                mem_read <= mem_read_in;
+                mem_write <= mem_write_in;
+                alu_src_a <= alu_src_a_in;
+                alu_src_b <= alu_src_b_in;
+                reg_write <= reg_write_in;
+                sign <= sign_in;
+
+                jump <= jump_in;
+                mem_to_reg <= mem_to_reg_in;
+                mem_size <= mem_size_in;
+                alu_op <= alu_op_in;
+
+                pc <= pc_in;
+                pc4 <= pc4_in;
+                inst <= inst_in;
+                branch_addr <= branch_addr_in;
+                sext <= sext_in;
+                rs1 <= rs1_in;
+                rs2 <= rs2_in;
+            end
         end
-        //        else begin
-        //            if(stall || branch) begin
-        //                inst <= 0;
-        //
-        //                mem_read <= 0;
-        //                mem_write <= 0;
-        //                reg_write <= 1;
-        //
-        //                jump <= 2'b0;
-        //                alu_op <= 0;
-        //
-        //            end
-        //            else begin
-        //                mem_read <= mem_read_in;
-        //                mem_write <= mem_write_in;
-        //                alu_src_a <= alu_src_a_in;
-        //                alu_src_b <= alu_src_b_in;
-        //                reg_write <= reg_write_in;
-        //                sign <= sign_in;
-        //
-        //                jump <= jump_in;
-        //                mem_to_reg <= mem_to_reg_in;
-        //                mem_size <= mem_size_in;
-        //                alu_op <= alu_op_in;
-        //
-        //                pc <= pc_in;
-        //                pc4 <= pc4_in;
-        //                inst <= inst_in;
-        //                branch_addr <= branch_addr_in;
-        //                sext <= sext_in;
-        //                rs1 <= rs1_in;
-        //                rs2 <= rs2_in;
-        //            end
-        //        end
     end
 endmodule
