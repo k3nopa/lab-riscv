@@ -15,12 +15,12 @@ module forwarding(
                 3 : begin
                     // forward from mem stage (rs1)
                     // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                    rs1 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
+                    rs1 = (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                 end
                 4 : begin
                     // forward from mem stage (rs2) 
                     // need to check EX_MEM_ALU cause exists cases where hazard1 & hazard2's forwarding target register's overlap
-                    rs2 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
+                    rs2 = (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                 end
                 default : ;
             endcase
@@ -28,11 +28,11 @@ module forwarding(
             case(hazard_reg1)
                 1 : begin
                     // forward from ex stage (rs1)
-                    rs1 <= alu_in;
+                    rs1 = alu_in;
                 end
                 2 : begin
                     // forward from ex stage (rs2)
-                    rs2 <= alu_in;
+                    rs2 = alu_in;
                 end
                 default : ;
             endcase
@@ -43,13 +43,13 @@ module forwarding(
             case(hazard_reg1)
                 1 : begin
                     // forward from ex stage (rs1)
-                    rs1 <= alu_in;
-                    rs2 <= rs2_in;
+                    rs1 = alu_in;
+                    rs2 = rs2_in;
                 end
                 2 : begin
                     // forward from ex stage (rs2)
-                    rs1 <= rs1_in;
-                    rs2 <= alu_in;
+                    rs1 = rs1_in;
+                    rs2 = alu_in;
                 end
                 default : ;
             endcase
@@ -58,31 +58,31 @@ module forwarding(
                 3 : begin
                     // forward from mem stage (rs1)
                     if (op == `JALR || op == `JAL) begin
-                        rs1 <= pc4_in;
-                        rs2 <= rs2_in;
+                        rs1 = pc4_in;
+                        rs2 = rs2_in;
                     end
                     else begin
-                        rs1 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
-                        rs2 <= rs2_in;
+                        rs1 = (op == `LOAD) ? mem_rdata_in : mem_alu_in;
+                        rs2 = rs2_in;
                     end
                 end
                 4 : begin
                     // forward from mem stage (rs2)
                     if (op == `JALR || op == `JAL) begin
-                        rs1 <= pc4_in;
-                        rs2 <= rs2_in;
+                        rs1 = pc4_in;
+                        rs2 = rs2_in;
                     end
                     else begin
-                        rs1 <= rs1_in;
-                        rs2 <= (op == `LOAD) ? mem_rdata_in : mem_alu_in;
+                        rs1 = rs1_in;
+                        rs2 = (op == `LOAD) ? mem_rdata_in : mem_alu_in;
                     end
                 end
                 default : ;
             endcase
         end
         else begin
-            rs1 <= rs1_in;
-            rs2 <= rs2_in;
+            rs1 = rs1_in;
+            rs2 = rs2_in;
         end
     end
 endmodule

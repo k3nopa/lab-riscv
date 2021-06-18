@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
-import sys, getopt, os
-import subprocess
+import sys, getopt, os, glob
+import subprocess, shutil
 
 # Colors Constant
 INFO = "\033[94m"
@@ -135,6 +135,7 @@ def args():
 
 def simulate(sim_type, dep_path):
     target_path = os.path.join(dev_path, "simulation")
+    files = glob.glob(f"{target_path}/*")
 
     current_path = os.path.dirname(os.path.abspath(__file__))
     if current_path != dev_path:
@@ -145,10 +146,17 @@ def simulate(sim_type, dep_path):
             os.mkdir("simulation")
         else:
             log("info", "Simulation directory already exists")
-            log("info", "Deleting Simulation directory")
-            cmd(["rm", "-rf", target_path])
-            log("info", "Creating simulation directory")
-            os.mkdir("simulation")
+            for f in files:
+                print(f)
+                try:
+                    if os.path.isfile(f) or os.path.islink(f):
+                        os.unlink(f)
+                    elif os.path.isdir(f):
+                        shutil.rmtree(f)
+                except Exception as e:
+                    print('Failed to delete. Reason: %s' % (e))
+
+            # cmd(["rm", "-r", f"{target_path}/"])
 
     except OSError:
         log("error", "Directory simulation can't be created")
@@ -275,9 +283,10 @@ def simulate(sim_type, dep_path):
         cmd(["cp", "-r", dep_path + file, "./"])
 
     log("info", "Run Simulation")
-    os.chdir(copy_path + "/simulation")
+    os.chdir(target_path)
     cmd(["iverilog", "-o", "out", "top_test.v"])
-
+    #os.chdir(dev_path)
+    #subprocess.run("./scripts/simulation.sh")
 
 def run():
     (sim_type, dep_path) = args()
