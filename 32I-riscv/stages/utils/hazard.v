@@ -6,6 +6,8 @@ module hazard(
 );
 
     wire [3:0] hazard1, hazard2;
+    wire [2:0] tgt1 = hazard1[2:0];
+    wire [2:0] tgt2 = hazard2[2:0];
 
     hazard_detection hazard_detect_unit1(
         .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
@@ -18,6 +20,9 @@ module hazard(
     );
 
     // set to zero, so it will forward the data from regfile
-    assign {is_hazard2, hazard_reg2} = (hazard1[2:0] == 1 && hazard2[2:0] == 3 || hazard1[2:0] == 3 && hazard2[2:0] == 1) ? 4'd0 : hazard2;
-    assign {is_hazard1, hazard_reg1} = (hazard1[2:0] == 2 && hazard2[2:0] == 4 || hazard1[2:0] == 4 && hazard2[2:0] == 2) ? 4'd0 : hazard1;
+    //    assign {is_hazard2, hazard_reg2} = (hazard1[2:0] == 1 && hazard2[2:0] == 3 || hazard1[2:0] == 3 && hazard2[2:0] == 1) ? 4'd0 : hazard2;
+    //    assign {is_hazard1, hazard_reg1} = (hazard1[2:0] == 2 && hazard2[2:0] == 4 || hazard1[2:0] == 4 && hazard2[2:0] == 2) ? 4'd0 : hazard1;
+    assign {is_hazard1, hazard_reg1} = hazard1;
+    assign {is_hazard2, hazard_reg2} = 
+    (tgt1 == 1 && tgt2 == 3 || tgt1 == 3 && tgt2 == 1 || tgt1 == 2 && tgt2 == 4 || tgt1 == 4 && tgt2 == 2) ? 4'd0 : hazard2;
 endmodule
