@@ -5,7 +5,7 @@ module id_stage (
     output is_signed,
     output [12:0] controls,
     output [1:0] inst_size,
-    output [31:0] branch_addr,
+//    output [31:0] branch_addr,
     output [31:0] sign_extend
 );
 
@@ -25,7 +25,7 @@ module id_stage (
     
     /* ----- Address Adder ----- */
     assign sign_extend = extend_imm;
-    assign branch_addr = pc + extend_imm;
+//    assign branch_addr = pc + extend_imm;
 
     assign controls = {mem_read, mem_write, alu_src_a, alu_src_b, mem_to_reg, alu_op, reg_write, jump};
 
