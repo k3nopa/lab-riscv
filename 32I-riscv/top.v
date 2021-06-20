@@ -5,7 +5,9 @@
 `include "stages/ID/id_stage.v"
 `include "stages/ID/id_control.v"
 `include "stages/ID/id_sign_extend.v"
-`include "stages/EX/ex_alu.v"
+//`include "stages/EX/ex_alu.v"
+`include "stages/EX/ex_alu1.v"
+`include "stages/EX/ex_alu2.v"
 `include "stages/EX/ex_stage.v"
 `include "stages/MEM/mem_stage.v"
 `include "stages/WB/wb_stage.v"
@@ -85,7 +87,8 @@ module top (
 
     if_stage if_phase(
         .pc(pc), 
-        .branch_addr(id_ex_branch_addr), 
+//        .branch_addr(id_ex_branch_addr), 
+        .branch_addr(alu), 
         .jump_addr(alu), 
         .pc_src(pc_src), 
         .jump(id_ex_jump), 
@@ -117,7 +120,7 @@ module top (
         .controls({mem_read, mem_write, alu_src_a, alu_src_b, mem_to_reg, alu_op, reg_write, jump}),
         .inst_size(inst_size), 
         .is_signed(is_signed),
-        .branch_addr(branch_addr), 
+//        .branch_addr(branch_addr), 
         .sign_extend(sext)
     );
 
@@ -152,7 +155,7 @@ module top (
         .pc_in(if_id_pc), 
         .pc4_in(if_id_pc4), 
         .inst_in(if_id_inst), 
-        .branch_addr_in(branch_addr), 
+//        .branch_addr_in(branch_addr), 
         .sext_in(sext), 
         .rs1_in(rs1_in), 
         .rs2_in(rs2_in),
@@ -170,7 +173,7 @@ module top (
         .pc(id_ex_pc), 
         .pc4(id_ex_pc4), 
         .inst(id_ex_inst), 
-        .branch_addr(id_ex_branch_addr), 
+//        .branch_addr(id_ex_branch_addr), 
         .sext(id_ex_sext), 
         .rs1(id_ex_rs1), 
         .rs2(id_ex_rs2)
