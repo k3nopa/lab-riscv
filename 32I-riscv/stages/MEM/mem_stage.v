@@ -44,9 +44,9 @@ module mem_stage (
     assign access_size = inst_size;
 
     assign mreq = (mem_read || mem_write) ? 1 : 0;
-    assign read_data = (mem_read) ? load_conv(is_signed, inst_size, rd_data) : 32'hx;
+    assign read_data = (mem_read) ? load_conv(is_signed, inst_size, rd_data) : 32'h0;
 
     assign write = (mem_write) ? 1 : 0;
-    assign wr_data = (mem_write) ?  write_data : 32'hx;
+    assign wr_data = (mem_write) ?  write_data : 32'h0;
 
 endmodule
