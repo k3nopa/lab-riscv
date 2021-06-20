@@ -1,17 +1,13 @@
 	.text
 main:
-	li	x1, 0x1
-	li	x2, 0x5
-	jal	loop
-
-stop:
-	li	x22, 0xFF000000
-	sw	x0, 0x0(x22)
+	li	x1,	1
+	li	x2,	5
 
 loop:
-	addi	x3,	x1,	0x1
-	bne	x3,	x2,	loop
-	ret
-
-	.data
+    addi x3, x3, 1
+    bne x3, x2, loop
+    
+stop:
+    li  x30, 0xff000000
+    sw  x0, 0x0(x30)
 

@@ -97,8 +97,8 @@ def cmd(cmd_list):
     stdout, stderr = process.communicate()
     stdout = str(stdout, "utf-8")
     stderr = str(stderr, "utf-8")
-    if stdout != "" or stderr != "":
-        print(stdout, stderr)
+#    if stdout != "" or stderr != "":
+#        print(stdout, stderr)
 
 
 def args():
@@ -147,7 +147,6 @@ def simulate(sim_type, dep_path):
         else:
             log("info", "Simulation directory already exists")
             for f in files:
-                print(f)
                 try:
                     if os.path.isfile(f) or os.path.islink(f):
                         os.unlink(f)
