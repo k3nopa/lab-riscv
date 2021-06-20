@@ -12,34 +12,13 @@ module ex_stage (
     output [31:0]   alu_result
 );
 
-    wire [31:0] alu_a, alu_b;
-
-    //    function [31:0] a_selector(input [31:0] in_a, input [31:0] in_b, input select);
-    //        begin
-    //            case(select)
-    //                0:  a_selector = in_a; 
-    //                1:  a_selector = in_b; 
-    //            endcase
-    //        end
-    //    endfunction
-    //
-    //    function [31:0] b_selector(input [31:0] in_a, input [31:0] in_b, input select);
-    //        begin
-    //            case(select)
-    //                0:  b_selector = in_a; 
-    //                1:  b_selector = in_b; 
-    //            endcase
-    //        end
-    //    endfunction
-
-    //    assign alu_a = a_selector(pc, a, alu_src_a);
-    //    assign alu_b = b_selector(b, sext, alu_src_b);
-
-    assign alu_a = (alu_src_a) ? a : pc;
-    assign alu_b = (alu_src_b) ? sext : b;
+    wire [31:0] alu_a = (alu_src_a) ? a : pc;
+    wire [31:0] alu_b = (alu_src_b) ? sext : b;
 
     //    ex_alu alu(.a(alu_a), .b(alu_b), .op(alu_op), .is_signed(is_signed), .result(alu_result), .branch(branch_result));
 
+    wire [31:0]     bra_a = (branch_result) ? pc   : alu_a;
+    wire [31:0]     bra_b = (branch_result) ? sext : alu_b;
     wire [31:0]     shift;
     wire            slt;
 
@@ -53,9 +32,6 @@ module ex_stage (
         .slt(slt),
         .shift(shift)
     );
-    
-    wire [31:0]     bra_a = (branch_result) ? pc   : alu_a;
-    wire [31:0]     bra_b = (branch_result) ? sext : alu_b;
 
     ex_alu2 alu_half2(
         .is_signed(is_signed),
@@ -67,5 +43,25 @@ module ex_stage (
 
         .result(alu_result)
     );
-    
+
 endmodule
+//    function [31:0] a_selector(input [31:0] in_a, input [31:0] in_b, input select);
+//        begin
+//            case(select)
+//                0:  a_selector = in_a; 
+//                1:  a_selector = in_b; 
+//            endcase
+//        end
+//    endfunction
+//
+//    function [31:0] b_selector(input [31:0] in_a, input [31:0] in_b, input select);
+//        begin
+//            case(select)
+//                0:  b_selector = in_a; 
+//                1:  b_selector = in_b; 
+//            endcase
+//        end
+//    endfunction
+
+//    assign alu_a = a_selector(pc, a, alu_src_a);
+//    assign alu_b = b_selector(b, sext, alu_src_b);
