@@ -76,12 +76,12 @@ module id_control(
         begin
             if (!rst || op == 0) begin
                 // can't use xx for jump, because !== can't be use in synthesis
-                controller = {1'b0, 1'b0, 1'bx, 1'bx, 2'bx, 1'b1, 2'b0};
+                controller = {1'b0, 1'b0, 1'b0, 1'b0, 2'd0, 1'b1, 2'b0};
             end
             else begin
                 case (op)
                     `LUI: begin
-                        controller = {1'b0, 1'b0, 1'bx, 1'b1, 2'd2, 1'b0, 2'b0};
+                        controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
                     end
                     `AUIPC: begin
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd2, 1'b0, 2'b0};
@@ -93,13 +93,13 @@ module id_control(
                         controller = {1'b1, 1'b0, 1'b1, 1'b1, 2'd1, 1'b0, 2'b0};
                     end
                     `STORE: begin
-                        controller = {1'b0, 1'b1, 1'b1, 1'b1, 2'bx, 1'b1, 2'b0};
+                        controller = {1'b0, 1'b1, 1'b1, 1'b1, 2'd0, 1'b1, 2'b0};
                     end
                     `R_TYPE: begin
                         controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'd2, 1'b0, 2'b0};
                     end
                     `BRANCH: begin
-                        controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'bx, 1'b1, 2'b0};
+                        controller = {1'b0, 1'b0, 1'b1, 1'b0, 2'd0, 1'b1, 2'b0};
                     end
                     `JAL: begin
                         controller = {1'b0, 1'b0, 1'b0, 1'b1, 2'd0, 1'b0, 2'd2};
