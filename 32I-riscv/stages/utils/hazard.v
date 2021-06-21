@@ -1,5 +1,8 @@
 module hazard(
-    input [31:0] if_id_inst, id_ex_inst, ex_mem_inst,
+    input [6:0]     if_id_op, id_ex_op, ex_mem_op,
+    input [4:0]     if_id_reg_src1, if_id_reg_src2,
+    input [4:0]     id_ex_rd,
+    input [4:0]     ex_mem_rd,
 
     output is_hazard1, is_hazard2,
     output [2:0] hazard_reg1, hazard_reg2
@@ -10,12 +13,24 @@ module hazard(
     wire [2:0] tgt2 = hazard2[2:0];
 
     hazard_detection hazard_detect_unit1(
-        .current(if_id_inst), .before(id_ex_inst), .next(1'b0),
+        .current_op(if_id_op),
+        .before_op(id_ex_op),
+        .before_rd(id_ex_rd),
+        .current_reg_src1(if_id_reg_src1),
+        .current_reg_src2(if_id_reg_src2),
+        .next(1'b0),
+        
         .hazard(hazard1)
     );
 
     hazard_detection hazard_detect_unit2(
-        .current(if_id_inst), .before(ex_mem_inst), .next(1'b1),
+        .current_op(if_id_op),
+        .before_op(ex_mem_op),
+        .before_rd(ex_mem_rd),
+        .current_reg_src1(if_id_reg_src1),
+        .current_reg_src2(if_id_reg_src2),
+        .next(1'b1),
+        
         .hazard(hazard2)
     );
 

@@ -1,8 +1,10 @@
 module hazard_detection(
-    input [31:0]    current, before,
-    input           next, // if next, means the next instruction. if !next, oldest instruction
+    input [6:0]      current_op, before_op,
+    input [4:0]      before_rd,
+    input [4:0]      current_reg_src1, current_reg_src2,
+    input            next, // if next, means the next instruction. if !next, oldest instruction
 
-    output [3:0]    hazard
+    output [3:0]     hazard
 );
 
     /* 
@@ -11,13 +13,6 @@ module hazard_detection(
      *  Thus these instructions are not valid to be check for hazards.
      *  To simplify, the condition needed to be checking for hazards are have both dest and src registers
      */
-     wire [6:0] current_op = current[6:0];
-     wire [6:0] before_op  = before[6:0];
-     
-     wire [4:0] _rd  = before[11:7];
-     wire [4:0] _rs1 = current[19:15];
-     wire [4:0] _rs2 = current[24:20];
-
     function [3:0] hazard_check(
         input [6:0] c_op, b_op,
         input [4:0] rd, rs1, rs2
@@ -51,6 +46,6 @@ module hazard_detection(
 
     endfunction
 
-    assign hazard = hazard_check(current_op, before_op, _rd, _rs1, _rs2);
+    assign hazard = hazard_check(current_op, before_op, before_rd, current_reg_src1, current_reg_src2);
 
 endmodule
