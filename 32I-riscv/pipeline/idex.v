@@ -49,20 +49,20 @@ module ID_EX_PIPE(
         end
 
         else begin
-            mem_read <= (stall || branch) ? 0 : mem_read_in;
-            mem_write <= (stall || branch) ? 0 : mem_write_in;
             alu_src_a <= alu_src_a_in;
             alu_src_b <= alu_src_b_in;
-            reg_write <= reg_write_in;
             sign <= sign_in;
+            mem_read <= (stall | branch) ? 0 : mem_read_in;
+            mem_write <= (stall | branch) ? 0 : mem_write_in;
+            reg_write <= (stall | branch) ? 1 : reg_write_in;
 
-            jump <= (stall || branch)? 2'b0 : jump_in;
             mem_to_reg <= mem_to_reg_in;
             mem_size <= mem_size_in;
-            alu_op <= (stall || branch)? 0 : alu_op_in;
+            jump <= (stall | branch)? 2'b0 : jump_in;
+            alu_op <= (stall | branch)? 0 : alu_op_in;
 
-            op <= (stall || branch) ? 7'b0 : op_in;
-            rd <= rd_in;
+            op <= (stall | branch)? 0 : op_in;
+            rd <= (stall | branch)? 0 : rd_in;
             reg_src1 <= reg_src1_in;
             reg_src2 <= reg_src2_in;
 
