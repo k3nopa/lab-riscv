@@ -1,5 +1,4 @@
 `timescale 1ns/1ps
-//`define IN_TOTAL 1000000
 `define IN_TOTAL 1000000000
 `include "top.v"
 
@@ -67,7 +66,6 @@ module top_test;
         #(HALF_CYCLE) clk = 1'b0;
         #(HALF_CYCLE);
      end
-
 
      //*** initialize ***//
      initial begin
