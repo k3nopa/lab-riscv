@@ -1,0 +1,73 @@
+\documentclass[10pt,a4paper]{jarticle}
+
+\usepackage[dvipdfm]{graphicx}
+\usepackage[]{amsmath}
+\usepackage{enumerate}
+\usepackage{latexsym}
+\usepackage{times}
+\usepackage[multi,deluxe]{otf}
+\usepackage{subfiles}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\graphicspath{ {images/} }
+
+\topmargin        0mm
+\oddsidemargin    -0.4mm
+\evensidemargin   -0.4mm
+\textwidth        160mm
+\textheight       237mm
+\columnsep        7mm
+\headheight       0mm
+\footskip         10mm
+\headsep          0mm
+\partopsep        0mm
+\textfloatsep     3mm
+\intextsep        3mm
+
+\begin{document}
+\begin{twocolumn}
+    [
+     \begin{flushright}
+      九州大学 CPC Lab 研究会\\
+      2021年度 第13回 研究会資料 TR2021-013
+     \end{flushright}
+     
+     \begin{center}
+      \begin{Large}
+       \begin{bf}
+           プロセッサ設計演習
+       \end{bf}
+      \end{Large}
+      
+      \begin{large}
+       ムハマド ナウファル \\
+       九州大学 工学部 電気情報工学科 4年\\
+       2020年7月05日
+      \end{large}
+     \end{center}
+    ]
+
+    \section{はじめに}
+        \subfile{sections/intro.tex}
+
+    \section{プロセッサの仕様}
+        \subfile{sections/specs.tex}
+
+    \section{プロセッサの構成}
+        \subfile{sections/processor.tex}
+
+    \section{検証結果}
+        \subfile{sections/eval.tex}
+
+    \section{改善点}
+        \subfile{sections/improv.tex}
+
+    \section{改善できる点}
+        \subfile{sections/upgradable.tex}
+
+    \section{まとめ}
+        \subfile{sections/summary.tex}
+
+\end{twocolumn}
+\end{document}

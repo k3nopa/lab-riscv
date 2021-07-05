@@ -1,0 +1,39 @@
+\documentclass[./specs.tex]{subfiles}
+
+\begin{document}
+    \begin{table*}[h]
+    \caption{命令セット}
+    \label{table:instructions}
+    \begin{tabular}{|l|l|l|llll}
+    \cline{1-3} \cline{5-7}
+    命令  & 形式 & 内容                                    & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{命令}   & \multicolumn{1}{l|}{形式} & \multicolumn{1}{l|}{内容}                         \\ \cline{1-3} \cline{5-7}
+    lui   & U    & Load Upper Immediate                    & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{add}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{ADD}                          \\
+    auipc & U    & Add Upper Immediate to PC               & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{sub}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{SUB}                          \\
+    jal   & J    & Jump And Link                           & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{sll}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{Shift Left Logical}           \\
+    jalr  & J    & Jump And Link Register                  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{slt}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{Set Less Than}                \\
+    beq   & B    & Branch EQual                            & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{sltu}   & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{Set Less Than Unsigned}       \\
+    bne   & B    & Branch Not Equal                        & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{xor}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{eXclusive OR}                 \\
+    blt   & B    & Branch Less Than                        & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{srl}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{Shift Right Logical}          \\
+    bge   & B    & Branch Greater than or Equal            & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{sra}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{Shift Right Arithmetic}       \\
+    bltu  & B    & Branch Less Than Unsigned               & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{or}     & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{OR}                           \\
+    bgeu  & B    & Branch Greater than or Equal Unsigned   & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{and}    & \multicolumn{1}{l|}{R}    & \multicolumn{1}{l|}{AND}                          \\ \cline{5-7}
+    lb    & I    & Load Byte                               & & & & \\
+    lh    & I    & Load Halfword                           & & & & \\
+    lw    & I    & Load Word                               & & & & \\
+    lbu   & I    & Load Byte Unsigned                      & & & & \\
+    lhu   & I    & Load Halfword Unsigned                  & & & & \\
+    sb    & S    & Store Byte                              & & & & \\
+    sh    & S    & Store Halfword                          & & & & \\
+    sw    & S    & Store Word                              & & & & \\ 
+    addi  & I    & ADD Immediate                           & & & & \\
+    slti  & I    & Set Less Than Immediate                 & & & & \\
+    sltiu & I    & Set Less Than Immediate Unsigned        & & & & \\
+    xori  & I    & eXclusive OR Immediate                  & & & & \\
+    ori   & I    & OR Immediate                            & & & & \\
+    andi  & I    & AND Immediate                           & & & & \\
+    slli  & I    & Shift Left Logical Immediate            & & & & \\
+    srli  & I    & Shift Right Logical Immediate           & & & & \\
+    srai  & I    & Shift Right Arithmetic Immediate        & & & & \\ \cline{1-3}
+    \end{tabular}
+  \end{table*}
+\end{document}

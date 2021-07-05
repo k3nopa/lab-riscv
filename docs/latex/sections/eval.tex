@@ -1,0 +1,60 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+    実装したプロセッサをcadence社のツールNC-Verilogを用いて性能検証する前に、
+    正常な動作ができるように、シミュレーションを行い、
+    用意されたテストプログラムを利用し、
+    全ての命令が正しく動作することを確認した。
+    シミュレーションをする際、1クロックサイクルはあたり10nsとして実行した.
+
+    以上の機能検証が終わり、
+    性能評価のために用いたテストプログムラ、MiBenchである。
+    先に、用意されたベンチマークプログラムは
+    正しい出力が得られるかどかうかのtestプログラムで判断する。
+    表\ref{table:benchmark}に示すように、
+    bitcount、dijkstra、stringsearchの3種類から、それぞれtest、small、largeの3種類を持ち、
+    ただし、largeには問題があるため、
+    ここで、largeの検証結果を出さないことにする。
+    総クロック数を求め、性能評価の基準として扱う。
+
+    論理合成にはDesign Compilerというツールを用いて、
+    最小周期の制約、面積、および消費電力を求めた。
+
+    \begin{table}[h]
+        \centering
+        \caption{ベンチマークの実行結果}
+        \label{table:benchmark}
+        \begin{tabular}{ |c|c| }
+         \hline
+         ベンチマーク名 & 実行時間[ns]\\
+         \hline
+         bitcnts:test & 2000285 \\
+        \hline
+         bitcnts:small & 1417166995 \\
+        \hline
+         dijkstra:test & 107521545 \\
+        \hline
+         dijkstra:small & 985645445 \\
+        \hline
+         stringsearch:test & 351885 \\
+        \hline
+         stringsearch:small & 3007895 \\
+        \hline
+        \end{tabular}
+    \end{table}
+
+    \begin{table}[h]
+        \centering
+        \caption{論理合成の結果}
+        \label{table:synthesis}
+        \begin{tabular}{ |c|c| }
+        \hline
+        最大遅延時間[ns] & 5.15 \\
+        \hline
+        面積[$\mu$$m^2$] & 265559 \\
+        \hline
+        消費電力[mW] & 4.7185 \\
+        \hline
+        \end{tabular}
+    \end{table}
+\end{document}
